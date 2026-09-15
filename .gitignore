@@ -1,0 +1,33 @@
+# Personal documents
+*.docx
+ChatGPT Papers Summery.docx
+Gemini Papers Summery.docx
+papers to read for lidar.docx
+experiment report.docx
+Final_Experiment_Report_*.docx
+Research_Roadmap.md
+
+# Large data files
+raw_dataset.csv
+datasets/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# PDF (keep LaTeX source, not compiled output)
+Signal-Aware Machine Learning Calibration-v2.pdf
+
+# Temporary
+temp_report.docx

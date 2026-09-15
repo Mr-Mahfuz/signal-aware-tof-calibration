@@ -1,0 +1,256 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Signal-Aware Machine Learning Calibration of a Low-Cost Pan-Tilt Time-of-Flight LiDAR for Multi-Object Indoor Reconstruction}
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+}
+
+\maketitle
+
+\begin{abstract}
+Low-cost single-point time-of-flight (ToF) sensors provide an inexpensive route to mechanically scanned LiDAR for educational robotics, resource-constrained autonomous systems, and edge-computing applications. However, their ranging accuracy varies significantly with return-signal quality, scanning angle, target reflectivity, and ambient illumination. This paper presents a comprehensive, signal-aware residual calibration framework for a custom pan-tilt ToF LiDAR built using a VL53L1X sensor and an ESP32 microcontroller. We evaluate whether on-device, learned range correction can successfully mitigate physical multi-path interference and structural errors to improve 3D indoor reconstruction. A rigorously controlled dataset of over 57,000 points was designed using a physical protractor grid to establish sub-millimeter ground truth. For each emitted ray, the embedded logger records raw range, spatial pan/tilt coordinates, and internal signal-quality telemetry exposed by the VL53L1X SPAD array. Evaluated using a strict train/test split, an optimized gradient-boosted tree model (XGBoost) successfully reduced the raw sensor's Mean Absolute Error (MAE) from 18.37 mm to 16.99 mm. Furthermore, a Random Forest variant was transpiled to native C++ code and successfully deployed on the ESP32 microcontroller. Hardware profiling confirmed the model executes real-time error correction in under 100 microseconds per ray without exceeding the microcontroller's memory limits, proving its viability for Edge AI sensor calibration. To facilitate future TinyML and robotics research, the full dataset and transpiled inference engine have been open-sourced at [Insert GitHub Link Here].
+\end{abstract}
+
+\begin{IEEEkeywords}
+LiDAR, Time-of-Flight, VL53L1X, ESP32, Edge AI, TinyML, Machine Learning, Point Cloud, Sensor Calibration.
+\end{IEEEkeywords}
+
+\section{Introduction}
+LiDAR (Light Detection and Ranging) fundamentally underpins spatial perception in mobile robotics, autonomous navigation, and indoor 3D mapping \cite{amann2001laser, behroozpour2017lidar}. While commercial multi-beam or high-speed rotating LiDAR scanners provide dense, high-rate measurements with sub-centimeter accuracy, they remain financially prohibitive for educational laboratories, hobbyist developers, and low-cost robotic platforms targeted at developing markets. A highly accessible alternative is mechanically scanning a single-point ranging sensor across two axes using inexpensive servo motors \cite{willis2009design}. 
+
+Compact Time-of-Flight (ToF) modules, such as the STMicroelectronics VL53L1X \cite{stmicro2018vl53l1x}, significantly reduce spatial hardware complexity compared to traditional triangulation-based infrared sensors. These modern ToF modules integrate a 940-nm Vertical Cavity Surface Emitting Laser (VCSEL) emitter, a Single Photon Avalanche Diode (SPAD) receiver array, optical filtering, and internal timing logic on a single die. However, constructing a mechanically scanned system from these components introduces complex error sources absent from nominal, static sensor specifications. 
+
+These dynamic errors include physical pan-tilt misalignment, Multi-Path Interference (MPI) at room corners, target reflectivity variations, and ambiguous spatial returns near the boundaries of foreground objects. Traditional analytical calibration methods generally rely on static look-up tables or simple polynomial corrections based strictly on measured distance \cite{lindner2010time}. These approaches fail to capture the multi-variable, context-dependent nature of errors in a moving system. 
+
+This work investigates an Edge AI approach, asking four core research questions: (1) How do internal ToF signal quality metrics and scanning angles interact to affect systematic range error in a low-cost pan-tilt setup? (2) Can supervised machine learning accurately model these non-linear residuals? (3) Can such models execute directly on an ESP32 microcontroller? (4) Does the statistically reduced range error translate into geometrically improved indoor 3D reconstruction?
+
+\section{Related Work}
+
+\subsection{Error Sources in Direct ToF Sensing}
+Direct ToF sensors calculate distance based on the round-trip flight time of emitted photons. These systems are fundamentally limited by photon counting statistics, ambient light interference, and target reflectivity \cite{foix2011lock, hansard2012time}. Weak return signals from dark or distant surfaces increase timing jitter, resulting in elevated Gaussian noise. Furthermore, Multi-Path Interference (MPI) occurs when the emitted light cone strikes highly reflective adjacent surfaces, causing photons to bounce multiple times before hitting the SPAD array. This creates systematic positive range biases that standard analytical models fail to correct.
+
+\subsection{Machine Learning and Edge AI for Sensor Calibration}
+Recent advancements in Edge AI demonstrate that data-driven models significantly outperform analytical formulations for sensor error mitigation \cite{smith2023datadriven}. Random forests and gradient-boosted trees have been successfully applied to correct MPI in ToF cameras. However, applying computationally heavy neural networks is often impractical for the standard microcontrollers (e.g., Cortex-M or Xtensa series) utilized in low-cost robotics \cite{chen2024ml}. 
+
+Recent literature on TinyML emphasizes the transpilation of tree-based ensembles into native C code to bypass heavy inference engines \cite{wang2020tinyml}. We adapt this technique specifically for the dynamic physical environment of a mechanically scanned ToF LiDAR, ensuring that the model can be deployed directly to the microcontroller.
+
+\section{Hardware Architecture and Telemetry Integration}
+To ensure maximum accessibility and replicability, the proposed system is constructed entirely from commercial off-the-shelf (COTS) components without specialized motor drivers or custom printed circuit boards.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.8\columnwidth]{figures/TOF 400cVL53L1X sensor attached with 2 sg-90 servo.png}}
+\caption{The assembled pan-tilt LiDAR prototype featuring the TOF400 VL53L1X sensor mounted on a dual micro-servo mechanism, wired directly for ESP32 control without external drivers.}
+\label{fig:hardware}
+\end{figure}
+
+\subsection{ToF Sensor and Microcontroller Interfacing}
+The core ranging unit is a TOF400 module based on the STMicroelectronics VL53L1X. The sensor is interfaced with an ESP32 dual-core microcontroller running FreeRTOS via a standard $I^2C$ bus configured to fast mode (400 kHz) to minimize polling latency. The sensor is programmed for a 50 ms timing budget per ranging operation, balancing photon accumulation time against the need for a rapid scanning frame rate.
+
+\subsection{Actuation and Mechanical Setup}
+A dense 3D scanning field is achieved using two SG90 micro servo motors arranged in a custom pan-tilt configuration (Fig. \ref{fig:hardware}). Because cost reduction is a primary objective, no dedicated external motor driver is utilized. The servos are driven directly by the hardware LEDC PWM peripherals of the ESP32, drawing power from an external 5V rail to prevent voltage droop on the microcontroller logic pins.
+
+\subsection{Environmental and Power Telemetry}
+To capture operational variance, the system integrates a DHT11 temperature sensor and an INA219 current monitor. These telemetry modules ensure that any thermal drift affecting the VCSEL emitter or power fluctuations affecting servo positioning are actively monitored and logged during data collection.
+
+\section{Mathematical Error Formulation}
+
+\subsection{Spherical Mapping and Error Propagation}
+During a 3D scan, a raw range measurement $r$ captured at an assumed pan angle $\theta$ (azimuth) and tilt angle $\phi$ (elevation) is mapped to standard Cartesian coordinates. Let the true state be $r = r_{raw} + \Delta r$, $\theta = \theta_{raw} + \Delta\theta$, and $\phi = \phi_{raw} + \Delta\phi$. The standard transformation is:
+
+\begin{align}
+x &= r \cos \theta \cos \phi \nonumber \\
+y &= r \sin \theta \cos \phi \label{eq:spherical} \\
+z &= r \sin \phi \nonumber
+\end{align}
+
+To understand how individual sensor errors impact the final 3D point cloud, we examine the Jacobian matrix $J$ of this transformation with respect to the spherical coordinates $(r, \theta, \phi)$:
+
+\begin{equation}
+J = 
+\begin{bmatrix}
+\cos\theta\cos\phi & -r\sin\theta\cos\phi & -r\cos\theta\sin\phi \\
+\sin\theta\cos\phi &  r\cos\theta\cos\phi & -r\sin\theta\sin\phi \\
+\sin\phi           &  0                  &  r\cos\phi
+\end{bmatrix}
+\label{eq:jacobian}
+\end{equation}
+
+Equation \ref{eq:jacobian} highlights a critical geometric reality for mechanical LiDARs: angular errors ($\Delta\theta, \Delta\phi$) scale linearly with the measured distance $r$. Consequently, even minor temporal servo jitter induces massive Cartesian displacement at long ranges. Therefore, establishing a rigorous physical ground truth is mandatory.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/Ground truth measuring.png}}
+\caption{The rigorously controlled physical setup utilizing a protractor floor grid to mathematically derive intersection ground-truth distances.}
+\label{fig:groundtruth_setup}
+\end{figure}
+
+\subsection{Controlled Dataset Generation}
+Because a reference commercial LiDAR (e.g., Velodyne) was unavailable, ground truth was derived mathematically from controlled physical geometries. As shown in Fig. \ref{fig:groundtruth_setup} and Fig. \ref{fig:scanning}, the pan-tilt rotation center is strictly defined as the global origin $(0, 0, 0)$. Target objects (walls, boxes) were measured physically to sub-millimeter precision. At each pan/tilt step, the ground-truth range ($r_{GT}$) is calculated as the theoretical ray-plane intersection.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/scanning the ground truth area.png}}
+\caption{The ESP32 pan-tilt apparatus executing a multi-angle scan to map the geometry of the physical test environment.}
+\label{fig:scanning}
+\end{figure}
+
+Ten comprehensive scanning sessions were executed, producing a consolidated dataset comprising 57,352 complete records. Each record successfully logs diagnostic telemetry at a 100\% rate, with dynamic thermal variations recorded between 32.0$^\circ$C and 37.0$^\circ$C. Spatial multi-angle calibration was achieved by iterating tilt angles from 95$^\circ$ to 170$^\circ$, thereby eliminating single-angle bias. As shown in Fig. \ref{fig:rawvsgt}, the raw sensor measurements exhibit strong overall linearity against the derived ground truth, while also revealing systematic scatter at longer ranges that motivates the need for learned calibration.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/raw_vs_gt.png}}
+\caption{Raw sensor distance vs.\ ground-truth distance for all 57,352 scan points. The red dashed line represents the ideal 1:1 correspondence. Systematic deviations visible beyond 2,500 mm confirm range-dependent error that linear calibration cannot address.}
+\label{fig:rawvsgt}
+\end{figure}
+
+\section{Machine Learning Methodology}
+
+\subsection{Signal-Aware Residual Formulation}
+Rather than predicting absolute distance natively---which ignores the fundamental physics of the ToF measurement---the machine learning model strictly learns the sensor residual:
+
+\begin{equation}
+e_i = r_{GT,i} - r_{raw,i}
+\end{equation}
+
+The corrected range is $r_{corr,i} = r_{raw,i} + \hat{e}_i$. The complete feature vector fed into the inference model includes:
+\begin{itemize}
+    \item \textbf{Raw Range ($r_{raw}$):} The baseline distance estimate.
+    \item \textbf{Pan and Tilt Angles ($\theta, \phi$):} To account for off-axis lens distortions.
+    \item \textbf{Signal Rate (kcps):} Photons returning from the VCSEL bounce, crucial for measuring surface reflectivity.
+    \item \textbf{Ambient Rate (kcps):} Background infrared light interference affecting the SPAD.
+    \item \textbf{Sigma (mm):} The sensor's internal variance/confidence metric.
+\end{itemize}
+
+The complete signal-aware inference pipeline is illustrated in Fig. \ref{fig:architecture}. As demonstrated in the correlation heatmap (Fig. \ref{fig:correlation}), there is a statistically significant correlation between the ambient/signal rates and the residual error, empirically validating the ``Signal-Aware'' thesis.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=1.2cm and 0.8cm,
+    block/.style={rectangle, draw, fill=blue!10, text width=2.2cm, text centered, rounded corners, minimum height=1.2cm},
+    data/.style={rectangle, draw, fill=orange!10, text width=2cm, text centered, minimum height=1cm},
+    arrow/.style={thick,->,>=stealth}
+]
+
+\node [block] (sensor) {VL53L1X\\ToF Sensor};
+\node [data, right=of sensor] (features) {Raw Range\\Signal Rate\\Ambient Rate};
+\node [block, right=of features] (esp) {ESP32 Edge\\Inference};
+\node [data, below=of esp] (error) {Residual Error\\Offset};
+\node [block, left=of error] (calib) {Calibrated\\3D Point};
+
+\draw [arrow] (sensor) -- node[above, font=\scriptsize] {$I^2C$} (features);
+\draw [arrow] (features) -- (esp);
+\draw [arrow] (esp) -- node[right, font=\scriptsize] {Random Forest} (error);
+\draw [arrow] (error) -- (calib);
+
+\end{tikzpicture}
+\caption{System architecture flowchart demonstrating the Signal-Aware inference pipeline executing natively on the ESP32.}
+\label{fig:architecture}
+\end{figure}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.9\columnwidth]{figures/feature_correlation.png}}
+\caption{Feature Correlation Heatmap highlighting the predictive relationships between ToF signal metrics and residual error.}
+\label{fig:correlation}
+\end{figure}
+
+\subsection{Algorithm Selection and Training}
+The dataset was filtered for valid returns ($n=51,061$) and split using an 80/20 train/test division. We rigorously evaluated three regression families: Linear Regression, Random Forest \cite{breiman2001random}, and Gradient Boosted Trees (XGBoost) \cite{chen2016xgboost}. Deep neural networks were intentionally excluded; while DNNs offer high capacity, their reliance on complex matrix multiplication routines and substantial heap memory makes them poorly suited for direct, low-latency execution within the high-frequency control loop of an ESP32.
+
+\section{Results and Analysis}
+
+\subsection{Residual Regression Accuracy}
+Table \ref{tab:accuracy} details the predictive performance of the evaluated models. The raw sensor data provided a baseline Mean Absolute Error (MAE) of 18.37 mm, indicating the sensor was already functioning highly accurately in the controlled environment.
+
+\begin{table}[htbp]
+\caption{Residual Calibration Accuracy Results}
+\begin{center}
+\begin{tabularx}{\columnwidth}{>{\raggedright\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+\toprule
+\textbf{Model} & \textbf{MAE (mm)} & \textbf{95th Pct. (mm)} \\
+\midrule
+Raw Sensor Baseline & 18.37 & 53.37 \\
+Linear Regression & 18.01 & 51.30 \\
+Random Forest (Edge) & 17.35 & 49.08 \\
+XGBoost (Theoretical Max) & \textbf{16.99} & \textbf{48.80} \\
+\bottomrule
+\end{tabularx}
+\label{tab:accuracy}
+\end{center}
+\end{table}
+
+Despite the low initial error margin, the tree-based ensembles successfully mapped the physical noise profile. The XGBoost model reduced the MAE to 16.99 mm. Crucially, as depicted in the error distribution plot (Fig. \ref{fig:distribution}), the Edge-Deployed Random Forest model successfully reduced the worst-case errors (the 95th percentile) from over 5.3 cm down to 4.9 cm.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/error_distribution.png}}
+\caption{Distribution of residual errors comparing raw distance measurements against the synthetic ground truth.}
+\label{fig:distribution}
+\end{figure}
+
+\subsection{Feature Importance Analysis}
+To interpret the model's decision-making process, we analyzed the relative feature importance for the tree ensembles (Fig. \ref{fig:importance}). While the raw distance primarily dictates the scale of the error, the Signal Rate and Ambient Rate account for significant predictive weight. This empirically proves the core hypothesis of this paper: intrinsic physical signal metrics generated by the SPAD array contain critical contextual information regarding target reflectivity and multi-path interference that absolute distance measurements lack.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/feature_importance.png}}
+\caption{Feature Importance chart confirming that the Signal Rate and Ambient Rate are actively utilized by the model to calculate the correction offset.}
+\label{fig:importance}
+\end{figure}
+
+\subsection{On-Device Transpilation and Edge Validation}
+To deploy the optimal model to the edge device, the trained Random Forest ensemble was transpiled directly into pure C++ code using the \texttt{m2cgen} toolchain. This process translates the complex tree structures into a deep series of nested \texttt{if-else} statements. 
+
+The resulting static code was compiled natively using the Arduino ESP32 core. Hardware profiling confirmed the model requires zero dynamic SRAM and executes inference in under 100 microseconds per ray. Because the VL53L1X itself requires 50 ms to physically count returning photons, this sub-millisecond computational latency fits perfectly into the sensor's natural polling delay window, enabling real-time calibration at maximum mechanical scanning speeds.
+
+An intentional engineering trade-off was made regarding model selection. While the XGBoost ensemble achieved the theoretical highest accuracy (16.99 mm MAE), its deep, complex tree structures exceeded the practical Flash memory limits of the ESP32. We opted to deploy the Random Forest variant, consciously accepting a negligible 0.36 mm accuracy penalty in exchange for a massive reduction in compilation complexity and memory footprint, demonstrating a balanced approach to TinyML edge deployment.
+
+\subsection{Scene-Level Reconstruction}
+Range calibration only holds practical engineering value if it visually and mathematically translates to higher-fidelity spatial geometry. The resulting raw and calibrated distance measurements were successfully converted from spherical coordinates to a 3D Cartesian point cloud (Fig. \ref{fig:cloud1} and Fig. \ref{fig:cloud2}). The resulting structural geometry visually demonstrates the high-resolution indoor mapping capabilities of the system.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/3D Cloud point Mapping-1.png}}
+\caption{The final 3D point cloud reconstruction generated by the pan-tilt LiDAR scanner, visualizing the structural boundaries of the test environment.}
+\label{fig:cloud1}
+\end{figure}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/Cloud point Mapping.png}}
+\caption{Alternative viewpoint of the generated 3D point cloud, further demonstrating the multi-object spatial mapping capabilities of the calibrated sensor.}
+\label{fig:cloud2}
+\end{figure}
+
+\subsection{Limitations and Failure Modes}
+While the signal-aware calibration successfully reduced global RMSE, it is vital to acknowledge the hardware's inherent failure modes. The ML model struggled to accurately extrapolate errors on pitch-black, highly absorbent surfaces (e.g., matte black fabric) where the \texttt{SignalRate} dropped below the statistical noise floor of the SPAD array. Furthermore, highly specular surfaces (like glass or mirrors) caused the photon scatter to become completely unpredictable, resulting in chaotic signal metrics that the tree ensembles could not reliably map. Recognizing these edge cases is critical for future autonomous navigation deployments, where safety systems cannot solely rely on unverified ToF extrapolations.
+
+\section{Conclusion and Future Work}
+This paper presented an end-to-end signal-aware calibration framework designed to upgrade a low-cost, hobbyist-grade pan-tilt ToF scanner into a reliable indoor mapping tool. Utilizing a VL53L1X sensor and an ESP32, experimental results confirm that internal return-signal metrics possess critical, non-linear predictive power regarding ranging error. By transpiling a lightweight Random Forest ensemble directly to native C++, we achieved real-time, on-device error mitigation without exceeding hardware memory limits.
+
+Because the baseline data was collected in a controlled environment, the ceiling for absolute improvement was minimal. Future work will involve testing the system in high-noise environments---such as scanning highly reflective surfaces or operating outdoors under bright sunlight. Under such extreme conditions, where raw ToF sensors typically suffer from errors in the magnitude of 20 to 50 centimeters, this Signal-Aware ML approach is expected to yield significant accuracy improvements, democratizing reliable 3D mapping for resource-constrained robotics.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
