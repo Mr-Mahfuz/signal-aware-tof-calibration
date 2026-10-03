@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Precision Protractor Generator — 1×2ft A4 Tiled PDF</title>
+<meta name="description" content="Generate a mathematically exact 1×2ft protractor, tiled across 6 A4 pages with calibration marks for accurate printing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* ── CSS Variables ───────────────────────── */
+:root {
+  --bg-base: #08090d;
+  --bg-surface: #11131a;
+  --bg-elevated: #1a1d28;
+  --bg-glass: rgba(255,255,255,0.03);
+  --glass-border: rgba(255,255,255,0.07);
+  --accent: #00e5a0;
+  --accent-dim: #009b6e;
+  --accent-glow: rgba(0,229,160,0.12);
+  --accent2: #7c5cfc;
+  --text-primary: #edf0f7;
+  --text-secondary: #8892a4;
+  --text-muted: #4a5568;
+  --danger: #ff4d6a;
+  --warning: #ffb347;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.45);
+}
+
+/* ── Reset & Base ────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── Header ──────────────────────────────── */
+.header {
+  text-align: center;
+  padding: 48px 24px 32px;
+  position: relative;
+}
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+}
+.header h1 {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+.header .subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-top: 8px;
+  font-weight: 300;
+}
+
+/* ── Main Layout ─────────────────────────── */
+.main-container {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* ── Settings Panel ──────────────────────── */
+.panel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 24px;
+  align-self: start;
+}
+.panel-section {
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.panel-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.panel-section h2 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.input-group {
+  margin-bottom: 14px;
+}
+.input-group label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 400;
+}
+.input-group input[type="number"] {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-group input[type="number"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.input-group input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  margin-top: 4px;
+}
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.range-row input { flex: 1; }
+.range-value {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 500;
+  min-width: 36px;
+  text-align: right;
+}
+.correction-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,229,160,0.08);
+  border: 1px solid rgba(0,229,160,0.2);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  color: var(--accent);
+  margin-top: 8px;
+  font-weight: 500;
+}
+.correction-badge.warn {
+  background: rgba(255,179,71,0.08);
+  border-color: rgba(255,179,71,0.25);
+  color: var(--warning);
+}
+.hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+/* ── Buttons ─────────────────────────────── */
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+}
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+  color: #0a0b10;
+  box-shadow: 0 4px 20px rgba(0,229,160,0.2);
+}
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 28px rgba(0,229,160,0.35);
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text-primary);
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+.btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* ── Preview Area ────────────────────────── */
+.preview-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.canvas-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+}
+.preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 4px;
+}
+.preview-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.preview-toolbar input[type="checkbox"] { accent-color: var(--accent); }
+.tile-legend {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+.tile-chip {
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  color: #fff;
+  opacity: 0.85;
+}
+
+/* ── Guide Sections ──────────────────────── */
+.guide-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+.guide-section h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.step-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  transition: border-color 0.25s, transform 0.2s;
+}
+.step-card:hover {
+  border-color: rgba(0,229,160,0.2);
+  transform: translateY(-2px);
+}
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+  color: #0a0b10;
+  border-radius: 50%;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.step-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.step-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* ── Print Tips ──────────────────────────── */
+.tips-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tips-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+.tips-list .icon {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.icon-do { background: rgba(0,229,160,0.15); color: var(--accent); }
+.icon-dont { background: rgba(255,77,106,0.15); color: var(--danger); }
+
+/* ── Footer ──────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 32px 24px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--glass-border);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── Responsive ──────────────────────────── */
+@media (max-width: 900px) {
+  .main-container {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    position: static;
+  }
+}
+@media (max-width: 600px) {
+  .header { padding: 32px 16px 24px; }
+  .main-container { padding: 16px; gap: 16px; }
+  .panel { padding: 20px; }
+  .guide-section { padding: 24px 16px; }
+  .steps-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Animations ──────────────────────────── */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.panel, .canvas-wrap, .step-card { animation: fadeIn 0.4s ease-out both; }
+.step-card:nth-child(2) { animation-delay: 0.05s; }
+.step-card:nth-child(3) { animation-delay: 0.1s; }
+.step-card:nth-child(4) { animation-delay: 0.15s; }
+.step-card:nth-child(5) { animation-delay: 0.2s; }
+.step-card:nth-child(6) { animation-delay: 0.25s; }
+
+/* ── Print styles ────────────────────────── */
+@media print { body { display: none; } }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ HEADER ═══ -->
+<header class="header">
+  <h1>Precision Protractor Generator</h1>
+  <p class="subtitle">1 × 2 ft — Tiled across 6 A4 pages with calibration system</p>
+</header>
+
+<!-- ═══════════════════════════════════════ MAIN ════ -->
+<div class="main-container">
+
+  <!-- ─── Settings Panel ─── -->
+  <aside class="panel" id="settings-panel">
+
+    <div class="panel-section">
+      <h2>Protractor Size</h2>
+      <div class="input-group">
+        <label for="input-radius">Radius (mm) — default 304.8 = 12 inches</label>
+        <input type="number" id="input-radius" value="304.8" step="0.1" min="100">
+      </div>
+      <div class="input-group">
+        <label for="input-overlap">Tile overlap (mm)</label>
+        <input type="number" id="input-overlap" value="10" step="1" min="5" max="30">
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h2>Printer Calibration</h2>
+      <p class="hint">Print the calibration page first. Measure the 100 mm reference line with a ruler, then enter the measured value below.</p>
+      <div class="input-group">
+        <label for="input-measured">Measured length of 100 mm line (mm)</label>
+        <input type="number" id="input-measured" value="100" step="0.1" min="90" max="110">
+      </div>
+      <div id="correction-display" class="correction-badge">Scale: 100.000 %</div>
+    </div>
+
+    <div class="panel-section">
+      <h2>Line Weight</h2>
+      <div class="input-group">
+        <label>Thickness multiplier</label>
+        <div class="range-row">
+          <input type="range" id="input-weight" min="0.5" max="2.5" step="0.1" value="1">
+          <span class="range-value" id="weight-value">1.0×</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-secondary" id="btn-calibration">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+        Print Calibration Page
+      </button>
+      <button class="btn btn-primary" id="btn-generate">
+        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        Generate Protractor PDF
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ─── Preview ─── -->
+  <div class="preview-area">
+    <div class="canvas-wrap">
+      <canvas id="preview-canvas"></canvas>
+    </div>
+    <div class="preview-toolbar">
+      <label><input type="checkbox" id="chk-grid" checked> Show tile grid</label>
+      <div class="tile-legend" id="tile-legend"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ ASSEMBLY GUIDE ═══ -->
+<section class="guide-section">
+  <h2>Assembly & Printing Guide</h2>
+  <div class="steps-grid">
+
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h3>Print Calibration Page</h3>
+      <p>Click "Print Calibration Page" to download a single-page PDF. Print it at <strong>100% / Actual Size</strong>. Do NOT use "Fit to Page".</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h3>Measure & Correct</h3>
+      <p>Use a ruler or caliper to measure the 100 mm reference line. If it measures e.g. 99.4 mm, enter <strong>99.4</strong> in the calibration field above.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h3>Generate PDF</h3>
+      <p>Click "Generate Protractor PDF" to download a 7-page PDF (1 calibration + 6 tile pages). The scale correction is applied automatically.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <h3>Print All Pages</h3>
+      <p>Open the PDF and print pages 2–7. Use <strong>"Actual Size"</strong> or <strong>"100%"</strong> in your print dialog. Never "Fit" or "Shrink".</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">5</div>
+      <h3>Trim & Align</h3>
+      <p>For each tile, trim one side of the overlap region using scissors or a craft knife. Align the <strong>registration crosses (+)</strong> on adjacent tiles.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">6</div>
+      <h3>Assemble</h3>
+      <p>Tape or glue tiles together, ensuring arcs and tick marks are continuous across seams. Verify with a set square at 90° and 45°.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PRINT SETTINGS TIPS ═══ -->
+<section class="guide-section">
+  <h2>Print Dialog Settings — What to Do</h2>
+  <ul class="tips-list">
+    <li><span class="icon icon-do">✓</span> Select <strong>"Actual Size"</strong> or set scale to <strong>100%</strong></li>
+    <li><span class="icon icon-do">✓</span> Set paper to <strong>A4</strong>, orientation <strong>Landscape</strong></li>
+    <li><span class="icon icon-do">✓</span> Use <strong>plain white paper</strong> for best contrast</li>
+    <li><span class="icon icon-do">✓</span> Print in <strong>black &amp; white</strong> (saves ink, max contrast)</li>
+    <li><span class="icon icon-dont">✗</span> Do NOT select "Fit to Printable Area" or "Shrink Oversized Pages"</li>
+    <li><span class="icon icon-dont">✗</span> Do NOT use "Borderless" mode — your L3210 doesn't support A4 borderless</li>
+    <li><span class="icon icon-dont">✗</span> Do NOT change the page orientation — the PDF is already set to landscape</li>
+  </ul>
+</section>
+
+<footer class="footer">
+  Precision Protractor Generator — All geometry computed to sub-millimeter accuracy using exact trigonometry.
+</footer>
+
+<!-- ═══════════════════════════════════════ JAVASCRIPT ═══ -->
+<script>
+(function() {
+'use strict';
+
+/* ============================================================
+   1. CONSTANTS & CONFIGURATION
+   ============================================================ */
+const A4_W = 297;   // mm, landscape width
+const A4_H = 210;   // mm, landscape height
+const PAGE_MARGIN = 3; // mm printer margin each side
+const PRINTABLE_W = A4_W - 2 * PAGE_MARGIN; // 291
+const PRINTABLE_H = A4_H - 2 * PAGE_MARGIN; // 204
+
+// Tile colors for preview
+const TILE_COLORS = [
+  { fill: 'rgba(0,229,160,0.07)',   stroke: 'rgba(0,229,160,0.45)',   chip: '#00e5a0' },
+  { fill: 'rgba(100,149,237,0.07)', stroke: 'rgba(100,149,237,0.45)', chip: '#6495ed' },
+  { fill: 'rgba(255,165,0,0.07)',   stroke: 'rgba(255,165,0,0.45)',   chip: '#ffa500' },
+  { fill: 'rgba(220,20,60,0.07)',   stroke: 'rgba(220,20,60,0.45)',   chip: '#dc143c' },
+  { fill: 'rgba(148,103,189,0.07)', stroke: 'rgba(148,103,189,0.45)', chip: '#9467bd' },
+  { fill: 'rgba(255,215,0,0.07)',   stroke: 'rgba(255,215,0,0.45)',   chip: '#ffd700' },
+];
+const ROW_LABELS = ['A','B','C','D','E'];
+
+// Application state
+const state = {
+  radius: 304.8,
+  overlap: 10,
+  measured: 100,
+  lineWeight: 1,
+  showGrid: true,
+};
+
+/* ============================================================
+   2. PROTRACTOR GEOMETRY ENGINE
+   All coordinates in mm, protractor-centered, y-down screen convention.
+   Origin = center of baseline. Arc goes upward (negative y).
+   ============================================================ */
+function computeElements(radius, lw) {
+  // Proportional dimensions based on radius
+  const R = radius;
+  const innerR  = R - 24;
+  const innermostR = R - 48;
+
+  const majorTick  = Math.max(8, R * 0.033);
+  const mediumTick = Math.max(5, R * 0.023);
+  const minorTick  = Math.max(3, R * 0.013);
+
+  const majorW  = 0.7 * lw;
+  const mediumW = 0.5 * lw;
+  const minorW  = 0.25 * lw;
+
+  const arcW1 = 0.6 * lw;
+  const arcW2 = 0.5 * lw;
+  const arcW3 = 0.4 * lw;
+
+  const fontSize = Math.max(5, R * 0.026); // mm
+  const outerLabelR = R - majorTick - 3 - fontSize * 0.5;
+  const innerLabelR = innerR - majorTick - 3 - fontSize * 0.5;
+
+  // Data structure: lines grouped by width, texts as array
+  const lines = {};
+  const texts = [];
+
+  function addLine(x1, y1, x2, y2, w) {
+    const key = w.toFixed(4);
+    if (!lines[key]) lines[key] = [];
+    lines[key].push({ x1, y1, x2, y2 });
+  }
+
+  // -- Helper --
+  const rad = (deg) => deg * Math.PI / 180;
+  const cosD = (deg) => Math.cos(rad(deg));
+  const sinD = (deg) => Math.sin(rad(deg));
+
+  // -- 1. Arcs (semicircles from 0° to 180°, drawn as 0.5° segments) --
+  const arcStep = 0.5;
+  const arcs = [
+    { r: R, w: arcW1 },
+    { r: innerR, w: arcW2 },
+    { r: innermostR, w: arcW3 },
+  ];
+  for (const arc of arcs) {
+    for (let d = 0; d < 180; d += arcStep) {
+      addLine(
+        arc.r * cosD(d),      -arc.r * sinD(d),
+        arc.r * cosD(d + arcStep), -arc.r * sinD(d + arcStep),
+        arc.w
+      );
+    }
+  }
+
+  // -- 2. Tick marks (0° to 180°) --
+  for (let d = 0; d <= 180; d++) {
+    const isMaj = d % 10 === 0;
+    const isMed = d % 5 === 0;
+    const tLen = isMaj ? majorTick : isMed ? mediumTick : minorTick;
+    const tW   = isMaj ? majorW    : isMed ? mediumW    : minorW;
+    const c = cosD(d), s = sinD(d);
+
+    // Outer ticks (from outer arc inward)
+    addLine(R * c, -R * s, (R - tLen) * c, -(R - tLen) * s, tW);
+    // Inner ticks (from inner arc inward)
+    addLine(innerR * c, -innerR * s, (innerR - tLen) * c, -(innerR - tLen) * s, tW);
+  }
+
+  // Center circle radius (used by radial lines and center mark)
+  const cr = Math.max(1.5, R * 0.007);
+
+  // -- 3. Radial guide lines from center to innermost arc (every 5°) --
+  for (let d = 0; d <= 180; d += 5) {
+    const c = cosD(d), s = sinD(d);
+    const isMaj = d % 10 === 0;
+    const lineW = isMaj ? 0.2 * lw : 0.12 * lw;
+    // Draw from center circle edge to innermost arc
+    addLine(cr * c, -cr * s, innermostR * c, -innermostR * s, lineW);
+  }
+
+  // -- 4. Degree labels (every 10°, from 10° to 170°) --
+  for (let d = 10; d <= 170; d += 10) {
+    const c = cosD(d), s = sinD(d);
+    const rot = rad(d - 90); // rotation for canvas (CW positive)
+
+    // Outer scale: label = 180 - d  (reads 0 at left → 180 at right)
+    texts.push({
+      text: String(180 - d),
+      x: outerLabelR * c, y: -outerLabelR * s,
+      rotation: rot,
+      fontSize: fontSize,
+    });
+    // Inner scale: label = d  (reads 0 at right → 180 at left)
+    texts.push({
+      text: String(d),
+      x: innerLabelR * c, y: -innerLabelR * s,
+      rotation: rot,
+      fontSize: fontSize,
+    });
+  }
+
+  // -- 4. Baseline endpoint labels --
+  // Right side (angle 0°): outer=180, inner=0
+  texts.push({ text: '180', x: outerLabelR,  y: -3, rotation: 0, fontSize: fontSize });
+  texts.push({ text: '0',   x: innerLabelR,  y: -3, rotation: 0, fontSize: fontSize });
+  // Left side (angle 180°): outer=0, inner=180
+  texts.push({ text: '0',   x: -outerLabelR, y: -3, rotation: 0, fontSize: fontSize });
+  texts.push({ text: '180', x: -innerLabelR, y: -3, rotation: 0, fontSize: fontSize });
+
+  // -- 5. Baseline (extends 5mm past the arc on each side) --
+  addLine(-R - 5, 0, R + 5, 0, 0.6 * lw);
+
+  // -- 6. Center crosshair + circle --
+  const cross = Math.max(6, R * 0.025);
+  addLine(0, -cross, 0, cross, 0.5 * lw);
+  addLine(-cross, 0, cross, 0, 0.5 * lw);
+  // cr already defined above
+  for (let d = 0; d < 360; d += 5) {
+    addLine(
+      cr * cosD(d), -cr * sinD(d),
+      cr * cosD(d + 5), -cr * sinD(d + 5),
+      0.4 * lw
+    );
+  }
+
+  return { lines, texts };
+}
+
+/* ============================================================
+   3. LAYOUT & TILING CALCULATOR
+   ============================================================ */
+function computeLayout(radius) {
+  const padX = 16, padTop = 12, padBot = 12;
+  return {
+    width:   2 * radius + 2 * padX,
+    height:  radius + padTop + padBot,
+    centerX: padX + radius,
+    centerY: padTop + radius, // baseline y in layout space
+  };
+}
+
+function computeTiles(layout, overlap) {
+  const stepX = PRINTABLE_W - overlap;
+  const stepY = PRINTABLE_H - overlap;
+  const numCols = Math.ceil((layout.width  - overlap) / stepX);
+  const numRows = Math.ceil((layout.height - overlap) / stepY);
+
+  const tiles = [];
+  for (let r = 0; r < numRows; r++) {
+    for (let c = 0; c < numCols; c++) {
+      tiles.push({
+        col: c, row: r,
+        label: ROW_LABELS[r] + (c + 1),
+        layoutX: c * stepX,
+        layoutY: r * stepY,
+        w: PRINTABLE_W,
+        h: PRINTABLE_H,
+      });
+    }
+  }
+  return { tiles, numCols, numRows };
+}
+
+/* ============================================================
+   4. CANVAS PREVIEW RENDERER
+   ============================================================ */
+function renderPreview() {
+  const canvas = document.getElementById('preview-canvas');
+  const container = canvas.parentElement;
+  const layout = computeLayout(state.radius);
+
+  // Responsive sizing
+  const displayW = container.clientWidth - 32; // padding
+  const aspectRatio = layout.height / layout.width;
+  const displayH = displayW * aspectRatio;
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width  = displayW * dpr;
+  canvas.height = displayH * dpr;
+  canvas.style.width  = displayW + 'px';
+  canvas.style.height = displayH + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const scale = displayW / layout.width; // px per mm
+
+  // White background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, displayW, displayH);
+
+  // Compute elements
+  const elements = computeElements(state.radius, state.lineWeight);
+
+  // Offset: convert protractor coords → canvas coords
+  const ox = layout.centerX;
+  const oy = layout.centerY;
+
+  // Draw lines, grouped by width
+  ctx.strokeStyle = '#000000';
+  ctx.lineCap = 'round';
+  for (const [w, segs] of Object.entries(elements.lines)) {
+    ctx.lineWidth = parseFloat(w) * scale;
+    ctx.beginPath();
+    for (const s of segs) {
+      ctx.moveTo((s.x1 + ox) * scale, (s.y1 + oy) * scale);
+      ctx.lineTo((s.x2 + ox) * scale, (s.y2 + oy) * scale);
+    }
+    ctx.stroke();
+  }
+
+  // Draw texts
+  ctx.fillStyle = '#000000';
+  for (const t of elements.texts) {
+    ctx.save();
+    ctx.translate((t.x + ox) * scale, (t.y + oy) * scale);
+    ctx.rotate(t.rotation);
+    ctx.font = `600 ${t.fontSize * scale}px Inter, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(t.text, 0, 0);
+    ctx.restore();
+  }
+
+  // Draw tile grid overlay
+  if (state.showGrid) {
+    const { tiles } = computeTiles(layout, state.overlap);
+    const legendEl = document.getElementById('tile-legend');
+    legendEl.innerHTML = '';
+
+    tiles.forEach((tile, i) => {
+      const color = TILE_COLORS[i % TILE_COLORS.length];
+      const tx = tile.layoutX * scale;
+      const ty = tile.layoutY * scale;
+      const tw = tile.w * scale;
+      const th = tile.h * scale;
+
+      ctx.fillStyle = color.fill;
+      ctx.fillRect(tx, ty, tw, th);
+      ctx.strokeStyle = color.stroke;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(tx, ty, tw, th);
+      ctx.setLineDash([]);
+
+      // Tile label
+      ctx.fillStyle = color.stroke;
+      ctx.font = `bold ${Math.max(14, 18 * scale)}px Inter, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(tile.label, tx + tw / 2, ty + th / 2);
+
+      // Legend chip
+      const chip = document.createElement('span');
+      chip.className = 'tile-chip';
+      chip.style.background = color.chip;
+      chip.textContent = tile.label;
+      legendEl.appendChild(chip);
+    });
+  }
+}
+
+/* ============================================================
+   5. PDF GENERATOR
+   ============================================================ */
+function generateCalibrationPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  drawCalibrationPage(pdf);
+  pdf.save('protractor_calibration.pdf');
+}
+
+function drawCalibrationPage(pdf) {
+  const mx = 20, my = 20; // content margins
+
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(18);
+  pdf.setTextColor(0);
+  pdf.text('CALIBRATION TEST PAGE', mx, my);
+
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.setTextColor(80);
+  pdf.text('Print this page at 100% / Actual Size. Do NOT use "Fit to Page" or "Shrink to Fit".', mx, my + 8);
+
+  // ── 100 mm Reference Line ──
+  const lineY1 = my + 25;
+  pdf.setFontSize(9);
+  pdf.setTextColor(0);
+  pdf.text('100 mm Reference Line:', mx, lineY1 - 3);
+
+  pdf.setDrawColor(0);
+  pdf.setLineWidth(0.6);
+  pdf.line(mx, lineY1, mx + 100, lineY1);
+
+  // End markers
+  pdf.setLineWidth(0.4);
+  pdf.line(mx, lineY1 - 4, mx, lineY1 + 4);
+  pdf.line(mx + 100, lineY1 - 4, mx + 100, lineY1 + 4);
+
+  // 10mm tick marks
+  pdf.setFontSize(6);
+  for (let i = 0; i <= 100; i += 10) {
+    const x = mx + i;
+    const tickH = i % 50 === 0 ? 3 : 2;
+    pdf.line(x, lineY1, x, lineY1 + tickH);
+    pdf.text(String(i), x, lineY1 + tickH + 3, { align: 'center' });
+  }
+
+  // ── 200 mm Reference Line ──
+  const lineY2 = lineY1 + 22;
+  pdf.setFontSize(9);
+  pdf.text('200 mm Reference Line:', mx, lineY2 - 3);
+
+  pdf.setLineWidth(0.6);
+  pdf.line(mx, lineY2, mx + 200, lineY2);
+  pdf.setLineWidth(0.4);
+  pdf.line(mx, lineY2 - 4, mx, lineY2 + 4);
+  pdf.line(mx + 200, lineY2 - 4, mx + 200, lineY2 + 4);
+
+  pdf.setFontSize(6);
+  for (let i = 0; i <= 200; i += 10) {
+    const x = mx + i;
+    const tickH = i % 50 === 0 ? 3 : 1.5;
+    pdf.line(x, lineY2, x, lineY2 + tickH);
+    if (i % 50 === 0) pdf.text(String(i), x, lineY2 + tickH + 3, { align: 'center' });
+  }
+
+  // ── 50×50 mm Grid ──
+  const gridX = mx, gridY = lineY2 + 20;
+  pdf.setFontSize(9);
+  pdf.text('50 × 50 mm Verification Grid (10 mm cells):', mx, gridY - 3);
+
+  pdf.setLineWidth(0.15);
+  pdf.setDrawColor(160);
+  for (let i = 0; i <= 50; i += 10) {
+    pdf.line(gridX + i, gridY, gridX + i, gridY + 50);
+    pdf.line(gridX, gridY + i, gridX + 50, gridY + i);
+  }
+  pdf.setLineWidth(0.5);
+  pdf.setDrawColor(0);
+  pdf.rect(gridX, gridY, 50, 50);
+
+  // ── Instructions ──
+  const instY = gridY + 65;
+  pdf.setFontSize(10);
+  pdf.setTextColor(0);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('Instructions:', mx, instY);
+
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(9);
+  pdf.setTextColor(60);
+  const instructions = [
+    '1. Print this page at 100% actual size (no scaling).',
+    '2. Measure the 100 mm line with a ruler or caliper.',
+    '3. If it measures exactly 100.0 mm, no correction is needed — proceed to generate the protractor.',
+    '4. If it measures e.g. 99.4 mm, enter "99.4" in the Calibration field and regenerate.',
+    '5. The formula: Scale Correction = 100 / Measured. All protractor geometry is adjusted accordingly.',
+    '6. Print the calibration page again to verify the correction is accurate.',
+  ];
+  instructions.forEach((line, i) => {
+    pdf.text(line, mx, instY + 7 + i * 5.5);
+  });
+}
+
+function generateProtractorPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+  // Scale correction
+  const correction = 100 / state.measured;
+  const scaledRadius = state.radius * correction;
+
+  // Compute elements with corrected radius
+  const elements = computeElements(scaledRadius, state.lineWeight);
+  const layout = computeLayout(scaledRadius);
+  const { tiles, numCols, numRows } = computeTiles(layout, state.overlap);
+
+  // Page 1: Calibration
+  drawCalibrationPage(pdf);
+
+  // Pages 2+: Tile pages
+  for (let ti = 0; ti < tiles.length; ti++) {
+    pdf.addPage('a4', 'landscape');
+    const tile = tiles[ti];
+
+    // Protractor center position on this page
+    const ox = PAGE_MARGIN + layout.centerX - tile.layoutX;
+    const oy = PAGE_MARGIN + layout.centerY - tile.layoutY;
+
+    // Draw protractor elements
+    pdf.setDrawColor(0);
+    pdf.setLineCap('round');
+
+    for (const [w, segs] of Object.entries(elements.lines)) {
+      pdf.setLineWidth(parseFloat(w));
+      for (const s of segs) {
+        const x1 = s.x1 + ox, y1 = s.y1 + oy;
+        const x2 = s.x2 + ox, y2 = s.y2 + oy;
+        // Skip if clearly outside page (with generous padding for thick lines)
+        if (x1 < -20 && x2 < -20) continue;
+        if (x1 > A4_W + 20 && x2 > A4_W + 20) continue;
+        if (y1 < -20 && y2 < -20) continue;
+        if (y1 > A4_H + 20 && y2 > A4_H + 20) continue;
+        pdf.line(x1, y1, x2, y2);
+      }
+    }
+
+    // Draw texts
+    pdf.setTextColor(0);
+    pdf.setFont('helvetica', 'bold');
+    for (const t of elements.texts) {
+      const x = t.x + ox, y = t.y + oy;
+      if (x < -15 || x > A4_W + 15 || y < -15 || y > A4_H + 15) continue;
+      const ptSize = t.fontSize / 0.3528;
+      pdf.setFontSize(ptSize);
+      const angle = -t.rotation * 180 / Math.PI;
+      pdf.text(t.text, x, y, { align: 'center', angle: angle });
+    }
+
+    // ── Tile metadata ──
+    // Page label (large, light gray)
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(28);
+    pdf.setTextColor(210);
+    pdf.text(tile.label, PAGE_MARGIN + 6, PAGE_MARGIN + 12);
+
+    // "Actual size" reminder
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7);
+    pdf.setTextColor(170);
+    pdf.text('PRINT AT 100% ACTUAL SIZE', A4_W - PAGE_MARGIN - 4, PAGE_MARGIN + 5, { align: 'right' });
+
+    // Neighbor indicators
+    pdf.setFontSize(7);
+    pdf.setTextColor(180);
+    if (tile.col > 0) {
+      const left = ROW_LABELS[tile.row] + tile.col;
+      pdf.text('\u2190 ' + left, PAGE_MARGIN + 2, A4_H / 2, { angle: 90 });
+    }
+    if (tile.col < numCols - 1) {
+      const right = ROW_LABELS[tile.row] + (tile.col + 2);
+      pdf.text(right + ' \u2192', A4_W - PAGE_MARGIN - 2, A4_H / 2, { angle: 90 });
+    }
+    if (tile.row > 0) {
+      const above = ROW_LABELS[tile.row - 1] + (tile.col + 1);
+      pdf.text('\u2191 ' + above, A4_W / 2, PAGE_MARGIN + 4, { align: 'center' });
+    }
+    if (tile.row < numRows - 1) {
+      const below = ROW_LABELS[tile.row + 1] + (tile.col + 1);
+      pdf.text(below + ' \u2193', A4_W / 2, A4_H - PAGE_MARGIN - 2, { align: 'center' });
+    }
+
+    // ── Registration crosses along overlap edges ──
+    drawRegistrationMarks(pdf, tile, tiles, numCols, numRows, layout);
+  }
+
+  pdf.save('protractor_1x2ft.pdf');
+}
+
+function drawRegistrationMarks(pdf, tile, tiles, numCols, numRows, layout) {
+  pdf.setDrawColor(150);
+  pdf.setLineWidth(0.2);
+  const cs = 4; // cross arm length mm
+
+  function drawCross(x, y) {
+    if (x < 1 || x > A4_W - 1 || y < 1 || y > A4_H - 1) return;
+    pdf.line(x - cs, y, x + cs, y);
+    pdf.line(x, y - cs, x, y + cs);
+  }
+
+  const overlap = state.overlap;
+  const spacing = 40; // mm between registration crosses
+
+  // Right edge overlap (if there's a tile to the right)
+  if (tile.col < numCols - 1) {
+    const xPos = PAGE_MARGIN + PRINTABLE_W - overlap / 2;
+    for (let y = PAGE_MARGIN + 20; y < A4_H - PAGE_MARGIN - 10; y += spacing) {
+      drawCross(xPos, y);
+    }
+  }
+
+  // Left edge overlap (if there's a tile to the left)
+  if (tile.col > 0) {
+    const xPos = PAGE_MARGIN + overlap / 2;
+    for (let y = PAGE_MARGIN + 20; y < A4_H - PAGE_MARGIN - 10; y += spacing) {
+      drawCross(xPos, y);
+    }
+  }
+
+  // Bottom edge overlap (if there's a tile below)
+  if (tile.row < numRows - 1) {
+    const yPos = PAGE_MARGIN + PRINTABLE_H - overlap / 2;
+    for (let x = PAGE_MARGIN + 20; x < A4_W - PAGE_MARGIN - 10; x += spacing) {
+      drawCross(x, yPos);
+    }
+  }
+
+  // Top edge overlap (if there's a tile above)
+  if (tile.row > 0) {
+    const yPos = PAGE_MARGIN + overlap / 2;
+    for (let x = PAGE_MARGIN + 20; x < A4_W - PAGE_MARGIN - 10; x += spacing) {
+      drawCross(x, yPos);
+    }
+  }
+
+  // ── Trim guide lines (dashed) ──
+  pdf.setDrawColor(200);
+  pdf.setLineWidth(0.15);
+
+  // Left trim line (if there's a tile to the left)
+  if (tile.col > 0) {
+    const x = PAGE_MARGIN + overlap;
+    drawDashedLine(pdf, x, PAGE_MARGIN, x, A4_H - PAGE_MARGIN);
+  }
+  // Top trim line (if there's a tile above)
+  if (tile.row > 0) {
+    const y = PAGE_MARGIN + overlap;
+    drawDashedLine(pdf, PAGE_MARGIN, y, A4_W - PAGE_MARGIN, y);
+  }
+}
+
+function drawDashedLine(pdf, x1, y1, x2, y2) {
+  const len = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  const dashLen = 3, gapLen = 3;
+  const dx = (x2 - x1) / len, dy = (y2 - y1) / len;
+  let d = 0;
+  while (d < len) {
+    const segEnd = Math.min(d + dashLen, len);
+    pdf.line(x1 + dx * d, y1 + dy * d, x1 + dx * segEnd, y1 + dy * segEnd);
+    d = segEnd + gapLen;
+  }
+}
+
+/* ============================================================
+   6. UI CONTROLLER
+   ============================================================ */
+function initUI() {
+  const inputRadius  = document.getElementById('input-radius');
+  const inputOverlap = document.getElementById('input-overlap');
+  const inputMeasured = document.getElementById('input-measured');
+  const inputWeight  = document.getElementById('input-weight');
+  const weightValue  = document.getElementById('weight-value');
+  const chkGrid      = document.getElementById('chk-grid');
+  const corrDisp     = document.getElementById('correction-display');
+  const btnCal       = document.getElementById('btn-calibration');
+  const btnGen       = document.getElementById('btn-generate');
+
+  function updateCorrection() {
+    const corr = (100 / state.measured * 100).toFixed(3);
+    corrDisp.textContent = 'Scale: ' + corr + ' %';
+    if (Math.abs(state.measured - 100) > 0.05) {
+      corrDisp.classList.add('warn');
+    } else {
+      corrDisp.classList.remove('warn');
+    }
+  }
+
+  function scheduleRender() {
+    cancelAnimationFrame(scheduleRender._raf);
+    scheduleRender._raf = requestAnimationFrame(renderPreview);
+  }
+
+  inputRadius.addEventListener('input', () => {
+    state.radius = Math.max(100, parseFloat(inputRadius.value) || 304.8);
+    scheduleRender();
+  });
+  inputOverlap.addEventListener('input', () => {
+    state.overlap = Math.max(3, parseInt(inputOverlap.value) || 10);
+    scheduleRender();
+  });
+  inputMeasured.addEventListener('input', () => {
+    state.measured = Math.max(85, Math.min(115, parseFloat(inputMeasured.value) || 100));
+    updateCorrection();
+  });
+  inputWeight.addEventListener('input', () => {
+    state.lineWeight = parseFloat(inputWeight.value) || 1;
+    weightValue.textContent = state.lineWeight.toFixed(1) + '×';
+    scheduleRender();
+  });
+  chkGrid.addEventListener('change', () => {
+    state.showGrid = chkGrid.checked;
+    renderPreview();
+  });
+
+  btnCal.addEventListener('click', () => {
+    btnCal.textContent = 'Generating…';
+    btnCal.disabled = true;
+    setTimeout(() => {
+      try { generateCalibrationPDF(); } catch (e) { alert('Error: ' + e.message); }
+      btnCal.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg> Print Calibration Page';
+      btnCal.disabled = false;
+    }, 60);
+  });
+
+  btnGen.addEventListener('click', () => {
+    btnGen.textContent = 'Generating PDF…';
+    btnGen.disabled = true;
+    setTimeout(() => {
+      try { generateProtractorPDF(); } catch (e) { alert('Error: ' + e.message); }
+      btnGen.innerHTML = '<svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Generate Protractor PDF';
+      btnGen.disabled = false;
+    }, 60);
+  });
+
+  updateCorrection();
+
+  // Responsive resize
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(renderPreview, 150);
+  });
+}
+
+/* ============================================================
+   7. INITIALIZATION
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  initUI();
+  // Small delay so fonts load
+  setTimeout(renderPreview, 100);
+});
+
+})();
+</script>
+</body>
+</html>

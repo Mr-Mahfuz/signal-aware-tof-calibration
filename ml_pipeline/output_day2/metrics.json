@@ -1,0 +1,154 @@
+{
+    "Day 2 Only": {
+        "Raw Sensor (No ML)": {
+            "MAE_mm": 934.97,
+            "RMSE_mm": 1215.86,
+            "R2": -0.0085,
+            "95th_pct_mm": 2617.87
+        },
+        "Linear Regression": {
+            "MAE_mm": 367.94,
+            "RMSE_mm": 506.27,
+            "R2": 0.8251,
+            "95th_pct_mm": 1040.66
+        },
+        "Random Forest": {
+            "MAE_mm": 65.22,
+            "RMSE_mm": 188.58,
+            "R2": 0.9757,
+            "95th_pct_mm": 376.96
+        },
+        "XGBoost": {
+            "MAE_mm": 49.34,
+            "RMSE_mm": 146.33,
+            "R2": 0.9854,
+            "95th_pct_mm": 203.7
+        },
+        "Gradient Boosting": {
+            "MAE_mm": 77.01,
+            "RMSE_mm": 190.25,
+            "R2": 0.9753,
+            "95th_pct_mm": 425.26
+        },
+        "MLP Neural Net": {
+            "MAE_mm": 166.4,
+            "RMSE_mm": 291.9,
+            "R2": 0.9419,
+            "95th_pct_mm": 750.32
+        }
+    },
+    "Train Day1 \u2192 Test Day2": {
+        "Raw Sensor (No ML)": {
+            "MAE_mm": 945.9,
+            "RMSE_mm": 1227.29,
+            "R2": -0.0119,
+            "95th_pct_mm": 2632.0
+        },
+        "Linear Regression": {
+            "MAE_mm": 936.62,
+            "RMSE_mm": 1203.17,
+            "R2": 0.0275,
+            "95th_pct_mm": 2661.96
+        },
+        "Random Forest": {
+            "MAE_mm": 945.87,
+            "RMSE_mm": 1227.37,
+            "R2": -0.012,
+            "95th_pct_mm": 2632.48
+        },
+        "XGBoost": {
+            "MAE_mm": 947.15,
+            "RMSE_mm": 1228.24,
+            "R2": -0.0134,
+            "95th_pct_mm": 2627.65
+        },
+        "Gradient Boosting": {
+            "MAE_mm": 951.63,
+            "RMSE_mm": 1231.64,
+            "R2": -0.019,
+            "95th_pct_mm": 2644.94
+        },
+        "MLP Neural Net": {
+            "MAE_mm": 951.41,
+            "RMSE_mm": 1232.59,
+            "R2": -0.0206,
+            "95th_pct_mm": 2649.75
+        }
+    },
+    "Train Day2 \u2192 Test Day1": {
+        "Raw Sensor (No ML)": {
+            "MAE_mm": 18.24,
+            "RMSE_mm": 24.82,
+            "R2": -0.0,
+            "95th_pct_mm": 52.48
+        },
+        "Linear Regression": {
+            "MAE_mm": 1148.39,
+            "RMSE_mm": 1425.59,
+            "R2": -3297.3833,
+            "95th_pct_mm": 2717.49
+        },
+        "Random Forest": {
+            "MAE_mm": 1097.88,
+            "RMSE_mm": 1401.33,
+            "R2": -3186.0927,
+            "95th_pct_mm": 2906.41
+        },
+        "XGBoost": {
+            "MAE_mm": 1049.09,
+            "RMSE_mm": 1308.35,
+            "R2": -2777.1782,
+            "95th_pct_mm": 2762.45
+        },
+        "Gradient Boosting": {
+            "MAE_mm": 993.2,
+            "RMSE_mm": 1354.12,
+            "R2": -2974.9544,
+            "95th_pct_mm": 2853.77
+        },
+        "MLP Neural Net": {
+            "MAE_mm": 1236.21,
+            "RMSE_mm": 1716.91,
+            "R2": -4783.1661,
+            "95th_pct_mm": 3901.13
+        }
+    },
+    "Combined Day1+Day2": {
+        "Raw Sensor (No ML)": {
+            "MAE_mm": 149.84,
+            "RMSE_mm": 458.52,
+            "R2": -0.0009,
+            "95th_pct_mm": 973.69
+        },
+        "Linear Regression": {
+            "MAE_mm": 155.41,
+            "RMSE_mm": 348.05,
+            "R2": 0.4233,
+            "95th_pct_mm": 746.98
+        },
+        "Random Forest": {
+            "MAE_mm": 23.37,
+            "RMSE_mm": 68.25,
+            "R2": 0.9778,
+            "95th_pct_mm": 56.07
+        },
+        "XGBoost": {
+            "MAE_mm": 22.41,
+            "RMSE_mm": 63.08,
+            "R2": 0.9811,
+            "95th_pct_mm": 54.18
+        },
+        "Gradient Boosting": {
+            "MAE_mm": 26.94,
+            "RMSE_mm": 74.81,
+            "R2": 0.9734,
+            "95th_pct_mm": 64.17
+        },
+        "MLP Neural Net": {
+            "MAE_mm": 36.78,
+            "RMSE_mm": 107.78,
+            "R2": 0.9447,
+            "95th_pct_mm": 102.78
+        }
+    }
+}

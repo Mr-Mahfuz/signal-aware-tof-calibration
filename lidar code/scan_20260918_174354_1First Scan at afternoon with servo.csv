@@ -1,0 +1,47 @@
+session_id,condition_label,point_index,repeat_index,scan_direction,pan_deg,tilt_deg,tof_mm,range_status,signal_rate_kcps,ambient_rate_kcps,sigma_mm,corrected_mm,inference_us,ina_bus_V,ina_current_mA,ina_power_mW,x,y,z,env_temp_C,humidity_pct
+1,1First Scan at afternoon with servo,1,1,forward,20,170,-1,255,0,0,-1.00,-1.00,0,-1.000,-1.00,-1.00,-1.00,-1.00,-1.00,31.80,70.00
+1,1First Scan at afternoon with servo,2,1,forward,21,170,2391,0,2368,520,-1.00,2391.00,1,-1.000,-1.00,-1.00,387.62,148.79,2354.68,31.80,70.00
+1,1First Scan at afternoon with servo,3,1,forward,22,170,2384,0,2200,536,-1.00,2384.00,0,-1.000,-1.00,-1.00,383.83,155.08,2347.78,31.80,70.00
+1,1First Scan at afternoon with servo,4,1,forward,23,170,2397,0,2280,528,-1.00,2397.00,0,-1.000,-1.00,-1.00,383.15,162.64,2360.58,31.80,70.00
+1,1First Scan at afternoon with servo,5,1,forward,24,170,2405,0,2240,536,-1.00,2405.00,0,-1.000,-1.00,-1.00,381.52,169.86,2368.46,31.80,70.00
+1,1First Scan at afternoon with servo,6,1,forward,25,170,2405,0,1880,576,-1.00,2405.00,0,-1.000,-1.00,-1.00,378.50,176.50,2368.46,31.80,70.00
+1,1First Scan at afternoon with servo,7,1,forward,26,170,2379,0,2128,544,-1.00,2379.00,0,-1.000,-1.00,-1.00,371.30,181.10,2342.86,31.80,70.00
+1,1First Scan at afternoon with servo,8,1,forward,27,170,2397,0,2424,504,-1.00,2397.00,0,-1.000,-1.00,-1.00,370.87,188.97,2360.58,31.80,70.00
+1,1First Scan at afternoon with servo,9,1,forward,28,170,2403,0,2192,512,-1.00,2403.00,0,-1.000,-1.00,-1.00,368.43,195.90,2366.49,31.80,70.00
+1,1First Scan at afternoon with servo,10,1,forward,29,170,2374,0,2184,536,-1.00,2374.00,0,-1.000,-1.00,-1.00,360.55,199.86,2337.93,31.80,70.00
+1,1First Scan at afternoon with servo,11,1,forward,30,170,2408,0,2440,512,-1.00,2408.00,0,-1.000,-1.00,-1.00,362.12,209.07,2371.42,31.80,70.00
+1,1First Scan at afternoon with servo,12,1,forward,31,170,2377,0,2160,560,-1.00,2377.00,0,-1.000,-1.00,-1.00,353.81,212.59,2340.89,31.80,70.00
+1,1First Scan at afternoon with servo,13,1,forward,32,170,2372,0,2408,544,-1.00,2372.00,0,-1.000,-1.00,-1.00,349.31,218.27,2335.96,31.80,70.00
+1,1First Scan at afternoon with servo,14,1,forward,33,170,2333,0,2136,568,-1.00,2333.00,0,-1.000,-1.00,-1.00,339.76,220.64,2297.56,31.80,70.00
+1,1First Scan at afternoon with servo,15,1,forward,34,170,2339,0,1936,568,-1.00,2339.00,0,-1.000,-1.00,-1.00,336.72,227.12,2303.47,31.80,70.00
+1,1First Scan at afternoon with servo,16,1,forward,35,170,2348,0,1856,592,-1.00,2348.00,0,-1.000,-1.00,-1.00,333.99,233.86,2312.33,31.80,70.00
+1,1First Scan at afternoon with servo,17,1,forward,36,170,2348,0,2376,520,-1.00,2348.00,0,-1.000,-1.00,-1.00,329.86,239.66,2312.33,31.80,70.00
+1,1First Scan at afternoon with servo,18,1,forward,37,170,2353,0,2384,512,-1.00,2353.00,0,-1.000,-1.00,-1.00,326.32,245.90,2317.25,31.80,70.00
+1,1First Scan at afternoon with servo,19,1,forward,38,170,2348,0,2696,496,-1.00,2348.00,0,-1.000,-1.00,-1.00,321.29,251.02,2312.33,31.80,70.00
+1,1First Scan at afternoon with servo,20,1,forward,39,170,2339,0,2360,520,-1.00,2339.00,0,-1.000,-1.00,-1.00,315.65,255.61,2303.47,31.80,70.00
+1,1First Scan at afternoon with servo,21,1,forward,40,170,2361,0,2312,512,-1.00,2361.00,0,-1.000,-1.00,-1.00,314.07,263.53,2325.13,31.80,70.00
+1,1First Scan at afternoon with servo,22,1,forward,41,170,2357,0,2448,536,-1.00,2357.00,0,-1.000,-1.00,-1.00,308.89,268.52,2321.19,31.80,70.00
+1,1First Scan at afternoon with servo,23,1,forward,42,170,2352,0,2400,512,-1.00,2352.00,0,-1.000,-1.00,-1.00,303.52,273.29,2316.27,31.80,70.00
+1,1First Scan at afternoon with servo,24,1,forward,43,170,2351,0,2048,560,-1.00,2351.00,0,-1.000,-1.00,-1.00,298.57,278.42,2315.28,31.80,70.00
+1,1First Scan at afternoon with servo,25,1,forward,44,170,2364,0,2472,528,-1.00,2364.00,0,-1.000,-1.00,-1.00,295.29,285.16,2328.09,31.80,70.00
+1,1First Scan at afternoon with servo,26,1,forward,45,170,2365,0,2656,504,-1.00,2365.00,0,-1.000,-1.00,-1.00,290.39,290.39,2329.07,31.80,70.00
+1,1First Scan at afternoon with servo,27,1,forward,46,170,2363,0,2736,520,-1.00,2363.00,0,-1.000,-1.00,-1.00,285.04,295.17,2327.10,31.80,70.00
+1,1First Scan at afternoon with servo,28,1,forward,47,170,2363,0,2624,504,-1.00,2363.00,0,-1.000,-1.00,-1.00,279.84,300.10,2327.10,31.80,70.00
+1,1First Scan at afternoon with servo,29,1,forward,48,170,2372,0,2288,528,-1.00,2372.00,0,-1.000,-1.00,-1.00,275.61,306.10,2335.96,31.80,70.00
+1,1First Scan at afternoon with servo,30,1,forward,49,170,2352,0,2504,512,-1.00,2352.00,0,-1.000,-1.00,-1.00,267.95,308.24,2316.27,31.80,70.00
+1,1First Scan at afternoon with servo,31,1,forward,50,170,2350,0,1784,576,-1.00,2350.00,0,-1.000,-1.00,-1.00,262.30,312.60,2314.30,31.80,70.00
+1,1First Scan at afternoon with servo,32,1,forward,51,170,2343,0,2344,528,-1.00,2343.00,0,-1.000,-1.00,-1.00,256.04,316.19,2307.40,31.80,70.00
+ets Jul 29 2019 12:21:46
+rst:0x1 (POWERON_RESET),boot:0x17 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1184
+load:0x40078000,len:13232
+load:0x40080400,len:3028
+entry 0x400805e4
+E (3043) gpio: gpio_set_level(227): GPIO output gpio_num error
+E (3054) gpio: gpio_set_level(227): GPIO output gpio_num error
+INA219 FAILED! Continuing without power logging.
+--- SYSTEM READY ---
+Send a condition label via Serial to start a scan...

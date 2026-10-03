@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiDAR Point Cloud Viewer — Signal-Aware ToF Calibration</title>
+    <meta name="description" content="Interactive 3D point cloud viewer for ToF LiDAR scan data with ground truth comparison and error visualization.">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2332;
+            --bg-hover: #243044;
+            --text-primary: #e8ecf4;
+            --text-secondary: #8b95a8;
+            --text-muted: #5a6577;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border: #1e293b;
+            --glow: 0 0 20px rgba(59, 130, 246, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ─── Header ─── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border);
+            height: 52px;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .header h1 {
+            font-size: 15px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .point-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+
+        /* ─── Layout ─── */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 52px);
+        }
+
+        /* ─── Sidebar ─── */
+        .sidebar {
+            width: 300px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .panel-body {
+            padding: 12px 14px;
+        }
+
+        /* ─── Controls ─── */
+        .file-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border: 2px dashed rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--accent-blue);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .file-input-label:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(6, 182, 212, 0.2) 100%);
+            border-color: var(--accent-blue);
+        }
+
+        .file-input-label input {
+            display: none;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        select, input[type="range"] {
+            width: 100%;
+            padding: 7px 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:hover, select:focus {
+            border-color: var(--accent-blue);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 4px;
+            padding: 0;
+            background: var(--border);
+            border: none;
+            border-radius: 2px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        .range-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--accent-cyan);
+            text-align: right;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-group .btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        /* ─── Viewport ─── */
+        .viewport {
+            flex: 1;
+            position: relative;
+            background: var(--bg-primary);
+        }
+
+        #canvas3d {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* ─── Info Tooltip ─── */
+        .tooltip {
+            position: absolute;
+            display: none;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            pointer-events: none;
+            z-index: 200;
+            font-size: 12px;
+            box-shadow: var(--glow);
+            min-width: 200px;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 2px 0;
+        }
+
+        .tooltip-key {
+            color: var(--text-secondary);
+        }
+
+        .tooltip-val {
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        /* ─── Stats Bar ─── */
+        .stats-bar {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font-size: 12px;
+            z-index: 50;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* ─── Loading ─── */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 14, 23, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        /* ─── Welcome Screen ─── */
+        .welcome {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .welcome-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .welcome h2 {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .welcome p {
+            font-size: 13px;
+        }
+
+        /* ─── Color legend ─── */
+        .color-legend {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            z-index: 50;
+        }
+
+        .legend-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .legend-gradient {
+            width: 150px;
+            height: 12px;
+            border-radius: 3px;
+            margin-bottom: 4px;
+        }
+
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+        }
+
+        /* Checkbox styles */
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+        }
+        .checkbox-row input[type="checkbox"] {
+            accent-color: var(--accent-blue);
+        }
+        .checkbox-row label {
+            font-size: 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">◎</div>
+            <h1>LiDAR Point Cloud Viewer</h1>
+        </div>
+        <div class="header-right">
+            <span id="pointCount" class="point-count">No data loaded</span>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <!-- File Loading -->
+            <div class="panel">
+                <div class="panel-header">📂 Data Source</div>
+                <div class="panel-body">
+                    <div class="file-input-wrapper">
+                        <label class="file-input-label" id="dropZone">
+                            <span>📁</span>
+                            <span>Drop CSV or click to load</span>
+                            <input type="file" id="fileInput" accept=".csv,.txt">
+                        </label>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted);">
+                        Supports: scan_day_2_processed/*.csv, day2_combined.csv, raw_dataset.csv
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scan Filter -->
+            <div class="panel">
+                <div class="panel-header">🔍 Scan Filter</div>
+                <div class="panel-body">
+                    <div class="control-group">
+                        <label class="control-label">Select Scan</label>
+                        <select id="scanFilter">
+                            <option value="all">All Scans</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="margin-top: 8px;">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="showValidOnly" checked>
+                            <label for="showValidOnly">Valid returns only</label>
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="showGTCloud">
+                            <label for="showGTCloud">Show ground truth cloud</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color Mode -->
+            <div class="panel">
+                <div class="panel-header">🎨 Color Mode</div>
+                <div class="panel-body">
+                    <div class="control-group">
+                        <select id="colorMode">
+                            <option value="distance">Distance (mm)</option>
+                            <option value="error">Residual Error</option>
+                            <option value="signal">Signal Rate (kcps)</option>
+                            <option value="ambient">Ambient Rate (kcps)</option>
+                            <option value="pan">Pan Angle</option>
+                            <option value="tilt">Tilt Angle</option>
+                            <option value="scan">Scan ID</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Point Size -->
+            <div class="panel">
+                <div class="panel-header">⚙ Rendering</div>
+                <div class="panel-body">
+                    <div class="control-group">
+                        <div style="display:flex; justify-content:space-between;">
+                            <label class="control-label">Point Size</label>
+                            <span id="pointSizeVal" class="range-value">3</span>
+                        </div>
+                        <input type="range" id="pointSize" min="1" max="10" value="3" step="0.5">
+                    </div>
+                    <div class="control-group" style="margin-top: 8px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <label class="control-label">Opacity</label>
+                            <span id="opacityVal" class="range-value">0.7</span>
+                        </div>
+                        <input type="range" id="opacity" min="0.1" max="1" value="0.7" step="0.05">
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Presets -->
+            <div class="panel">
+                <div class="panel-header">👁 View Presets</div>
+                <div class="panel-body">
+                    <div class="btn-group">
+                        <button class="btn" onclick="setView('front')">Front</button>
+                        <button class="btn" onclick="setView('top')">Top</button>
+                        <button class="btn" onclick="setView('side')">Side</button>
+                        <button class="btn" onclick="setView('iso')">Iso</button>
+                    </div>
+                    <div style="margin-top:8px">
+                        <button class="btn" style="width:100%;" onclick="resetCamera()">↻ Reset Camera</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Panel -->
+            <div class="panel" id="statsPanel" style="display:none;">
+                <div class="panel-header">📊 Statistics</div>
+                <div class="panel-body" id="statsBody">
+                </div>
+            </div>
+        </div>
+
+        <div class="viewport">
+            <canvas id="canvas3d"></canvas>
+            
+            <div class="welcome" id="welcome">
+                <div class="welcome-icon">◎</div>
+                <h2>Load a Point Cloud Dataset</h2>
+                <p>Drop a CSV file or use the file picker in the sidebar</p>
+            </div>
+
+            <div class="loading-overlay hidden" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">Parsing point cloud data...</div>
+            </div>
+
+            <div class="color-legend" id="colorLegend" style="display:none;">
+                <div class="legend-title" id="legendTitle">Distance (mm)</div>
+                <div class="legend-gradient" id="legendGradient"></div>
+                <div class="legend-labels">
+                    <span id="legendMin">0</span>
+                    <span id="legendMax">1000</span>
+                </div>
+            </div>
+
+            <div class="tooltip" id="tooltip"></div>
+
+            <div class="stats-bar" id="statsBar" style="display:none;">
+                <div class="stat-item">
+                    <div class="stat-dot" style="background: var(--accent-green);"></div>
+                    <span class="stat-label">Points:</span>
+                    <span class="stat-value" id="statPoints">0</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-dot" style="background: var(--accent-blue);"></div>
+                    <span class="stat-label">Mean Dist:</span>
+                    <span class="stat-value" id="statMeanDist">0 mm</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-dot" style="background: var(--accent-orange);"></div>
+                    <span class="stat-label">MAE:</span>
+                    <span class="stat-value" id="statMAE">— mm</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-dot" style="background: var(--accent-purple);"></div>
+                    <span class="stat-label">Pan:</span>
+                    <span class="stat-value" id="statPan">—</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+    // ─── State ───────────────────────────────────────────────────────
+    let scene, camera, renderer, controls;
+    let pointCloud = null, gtPointCloud = null;
+    let rawData = []; // Array of parsed row objects
+    let filteredData = [];
+    let raycaster, mouse;
+
+    // Color maps
+    const COLOR_MAPS = {
+        viridis: [[68,1,84],[72,35,116],[64,67,135],[52,94,141],[33,145,140],[94,201,98],[253,231,37]],
+        rdylgn: [[215,25,28],[253,174,97],[255,255,191],[166,217,106],[26,150,65]],
+        plasma: [[13,8,135],[126,3,168],[204,71,120],[248,149,64],[240,249,33]],
+        tab10: [[31,119,180],[255,127,14],[44,160,44],[214,39,40],[148,103,189],
+                [140,86,75],[227,119,194],[127,127,127],[188,189,34],[23,190,207]]
+    };
+
+    function interpolateColor(colors, t) {
+        t = Math.max(0, Math.min(1, t));
+        const idx = t * (colors.length - 1);
+        const lo = Math.floor(idx);
+        const hi = Math.min(lo + 1, colors.length - 1);
+        const f = idx - lo;
+        return [
+            colors[lo][0] + (colors[hi][0] - colors[lo][0]) * f,
+            colors[lo][1] + (colors[hi][1] - colors[lo][1]) * f,
+            colors[lo][2] + (colors[hi][2] - colors[lo][2]) * f,
+        ];
+    }
+
+    // ─── Init Three.js ──────────────────────────────────────────────
+    function initScene() {
+        const canvas = document.getElementById('canvas3d');
+        const viewport = canvas.parentElement;
+
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+        renderer.setClearColor(0x0a0e17);
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(60, viewport.clientWidth / viewport.clientHeight, 1, 50000);
+        camera.position.set(2000, 2000, 2000);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.rotateSpeed = 0.5;
+
+        // Grid helper
+        const grid = new THREE.GridHelper(6000, 30, 0x1e293b, 0x111827);
+        scene.add(grid);
+
+        // Axes
+        const axesHelper = new THREE.AxesHelper(500);
+        scene.add(axesHelper);
+
+        // Origin marker
+        const originGeo = new THREE.SphereGeometry(15, 16, 16);
+        const originMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+        scene.add(new THREE.Mesh(originGeo, originMat));
+
+        // Ambient light
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+        raycaster = new THREE.Raycaster();
+        raycaster.params.Points.threshold = 20;
+        mouse = new THREE.Vector2();
+
+        // Event listeners
+        canvas.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('resize', onResize);
+
+        animate();
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    function onResize() {
+        const viewport = document.getElementById('canvas3d').parentElement;
+        camera.aspect = viewport.clientWidth / viewport.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+    }
+
+    function onMouseMove(e) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+        if (!pointCloud) return;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObject(pointCloud);
+
+        const tooltip = document.getElementById('tooltip');
+        if (intersects.length > 0) {
+            const idx = intersects[0].index;
+            const pt = filteredData[idx];
+            if (pt) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+                tooltip.innerHTML = `
+                    <div class="tooltip-row"><span class="tooltip-key">Distance</span><span class="tooltip-val">${pt.tof_mm} mm</span></div>
+                    <div class="tooltip-row"><span class="tooltip-key">Pan / Tilt</span><span class="tooltip-val">${pt.pan_deg}° / ${pt.tilt_deg}°</span></div>
+                    <div class="tooltip-row"><span class="tooltip-key">Signal Rate</span><span class="tooltip-val">${pt.signal_rate_kcps} kcps</span></div>
+                    <div class="tooltip-row"><span class="tooltip-key">Ambient Rate</span><span class="tooltip-val">${pt.ambient_rate_kcps} kcps</span></div>
+                    ${pt.gt_distance_mm ? `<div class="tooltip-row"><span class="tooltip-key">Ground Truth</span><span class="tooltip-val">${parseFloat(pt.gt_distance_mm).toFixed(1)} mm</span></div>` : ''}
+                    ${pt.residual_error_mm ? `<div class="tooltip-row"><span class="tooltip-key">Error</span><span class="tooltip-val">${parseFloat(pt.residual_error_mm).toFixed(1)} mm</span></div>` : ''}
+                    ${pt.condition_label ? `<div class="tooltip-row"><span class="tooltip-key">Condition</span><span class="tooltip-val">${pt.condition_label}</span></div>` : ''}
+                `;
+            }
+        } else {
+            tooltip.style.display = 'none';
+        }
+    }
+
+    // ─── CSV Parsing ─────────────────────────────────────────────────
+    function parseCSV(text) {
+        const lines = text.trim().split('\n');
+        if (lines.length < 2) return [];
+
+        // Find header line
+        let headerIdx = 0;
+        for (let i = 0; i < Math.min(5, lines.length); i++) {
+            if (lines[i].includes('pan_deg') || lines[i].includes('pan_commanded_deg') || lines[i].includes('pan_calibrated_deg')) {
+                headerIdx = i;
+                break;
+            }
+        }
+
+        const headers = lines[headerIdx].split(',').map(h => h.trim());
+        const data = [];
+
+        for (let i = headerIdx + 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line || line.startsWith('CMD') || line.startsWith('SCAN')) continue;
+
+            const values = line.split(',');
+            if (values.length < headers.length - 2) continue;
+
+            const row = {};
+            headers.forEach((h, idx) => {
+                row[h] = values[idx] !== undefined ? values[idx].trim() : '';
+            });
+
+            // Normalize column names (Day 1 compatibility)
+            if (!row.pan_deg && row.pan_calibrated_deg) row.pan_deg = row.pan_calibrated_deg;
+            if (!row.pan_deg && row.pan_commanded_deg) row.pan_deg = row.pan_commanded_deg;
+            if (!row.tilt_deg && row.tilt_calibrated_deg) row.tilt_deg = row.tilt_calibrated_deg;
+            if (!row.tilt_deg && row.tilt_commanded_deg) row.tilt_deg = row.tilt_commanded_deg;
+            if (!row.tof_mm && row.raw_distance_mm) row.tof_mm = row.raw_distance_mm;
+
+            // Parse numerics
+            row.pan_deg = parseFloat(row.pan_deg);
+            row.tilt_deg = parseFloat(row.tilt_deg);
+            row.tof_mm = parseFloat(row.tof_mm);
+            row.signal_rate_kcps = parseFloat(row.signal_rate_kcps) || 0;
+            row.ambient_rate_kcps = parseFloat(row.ambient_rate_kcps) || 0;
+            row.gt_distance_mm = parseFloat(row.gt_distance_mm) || null;
+            row.residual_error_mm = parseFloat(row.residual_error_mm) || null;
+            row.scan_id = parseInt(row.scan_id) || 1;
+            row.valid_return = parseInt(row.valid_return);
+
+            if (isNaN(row.pan_deg) || isNaN(row.tilt_deg)) continue;
+
+            // Compute XYZ if not present or if they look like defaults
+            if (row.tof_mm > 0) {
+                const tiltRad = (row.tilt_deg - 90) * Math.PI / 180;
+                const panRad = row.pan_deg * Math.PI / 180;
+                row.x = row.tof_mm * Math.cos(tiltRad) * Math.cos(panRad);
+                row.y = row.tof_mm * Math.cos(tiltRad) * Math.sin(panRad);
+                row.z = row.tof_mm * Math.sin(tiltRad);
+            } else {
+                row.x = 0; row.y = 0; row.z = 0;
+            }
+
+            // GT XYZ
+            if (row.gt_distance_mm && row.gt_distance_mm > 0) {
+                const tiltRad = (row.tilt_deg - 90) * Math.PI / 180;
+                const panRad = row.pan_deg * Math.PI / 180;
+                row.x_gt = row.gt_distance_mm * Math.cos(tiltRad) * Math.cos(panRad);
+                row.y_gt = row.gt_distance_mm * Math.cos(tiltRad) * Math.sin(panRad);
+                row.z_gt = row.gt_distance_mm * Math.sin(tiltRad);
+            }
+
+            data.push(row);
+        }
+
+        return data;
+    }
+
+    // ─── Build Point Cloud ──────────────────────────────────────────
+    function buildPointCloud() {
+        // Remove existing
+        if (pointCloud) { scene.remove(pointCloud); pointCloud.geometry.dispose(); pointCloud.material.dispose(); }
+        if (gtPointCloud) { scene.remove(gtPointCloud); gtPointCloud.geometry.dispose(); gtPointCloud.material.dispose(); }
+
+        const scanFilter = document.getElementById('scanFilter').value;
+        const validOnly = document.getElementById('showValidOnly').checked;
+        const showGT = document.getElementById('showGTCloud').checked;
+        const colorMode = document.getElementById('colorMode').value;
+        const pointSizeVal = parseFloat(document.getElementById('pointSize').value);
+        const opacityVal = parseFloat(document.getElementById('opacity').value);
+
+        // Filter data
+        filteredData = rawData.filter(pt => {
+            if (validOnly && pt.tof_mm <= 0) return false;
+            if (scanFilter !== 'all' && pt.scan_id !== parseInt(scanFilter)) return false;
+            return true;
+        });
+
+        if (filteredData.length === 0) return;
+
+        // Compute color range
+        let colorValues = [];
+        let colorMap = COLOR_MAPS.viridis;
+        let legendTitle = '';
+
+        switch (colorMode) {
+            case 'distance':
+                colorValues = filteredData.map(p => p.tof_mm);
+                legendTitle = 'Distance (mm)';
+                break;
+            case 'error':
+                colorValues = filteredData.map(p => p.residual_error_mm || 0);
+                colorMap = COLOR_MAPS.rdylgn;
+                legendTitle = 'Residual Error (mm)';
+                break;
+            case 'signal':
+                colorValues = filteredData.map(p => p.signal_rate_kcps);
+                colorMap = COLOR_MAPS.plasma;
+                legendTitle = 'Signal Rate (kcps)';
+                break;
+            case 'ambient':
+                colorValues = filteredData.map(p => p.ambient_rate_kcps);
+                colorMap = COLOR_MAPS.plasma;
+                legendTitle = 'Ambient Rate (kcps)';
+                break;
+            case 'pan':
+                colorValues = filteredData.map(p => p.pan_deg);
+                legendTitle = 'Pan Angle (°)';
+                break;
+            case 'tilt':
+                colorValues = filteredData.map(p => p.tilt_deg);
+                legendTitle = 'Tilt Angle (°)';
+                break;
+            case 'scan':
+                colorValues = filteredData.map(p => p.scan_id);
+                colorMap = COLOR_MAPS.tab10;
+                legendTitle = 'Scan ID';
+                break;
+        }
+
+        const validColors = colorValues.filter(v => v !== null && !isNaN(v));
+        let cmin = Math.min(...validColors);
+        let cmax = Math.max(...validColors);
+        if (cmin === cmax) cmax = cmin + 1;
+
+        // For error mode, center around 0
+        if (colorMode === 'error') {
+            const absMax = Math.max(Math.abs(cmin), Math.abs(cmax), 200);
+            cmin = -absMax;
+            cmax = absMax;
+        }
+
+        // Build geometry
+        const positions = new Float32Array(filteredData.length * 3);
+        const colors = new Float32Array(filteredData.length * 3);
+
+        for (let i = 0; i < filteredData.length; i++) {
+            const pt = filteredData[i];
+            positions[i * 3] = pt.x;
+            positions[i * 3 + 1] = pt.z;     // Y-up in Three.js
+            positions[i * 3 + 2] = pt.y;
+
+            const val = colorValues[i] || 0;
+            const t = (val - cmin) / (cmax - cmin);
+            const rgb = interpolateColor(colorMap, t);
+            colors[i * 3] = rgb[0] / 255;
+            colors[i * 3 + 1] = rgb[1] / 255;
+            colors[i * 3 + 2] = rgb[2] / 255;
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: pointSizeVal,
+            vertexColors: true,
+            transparent: true,
+            opacity: opacityVal,
+            sizeAttenuation: true,
+        });
+
+        pointCloud = new THREE.Points(geometry, material);
+        scene.add(pointCloud);
+
+        // Ground truth cloud
+        if (showGT) {
+            const gtData = filteredData.filter(p => p.x_gt !== undefined);
+            if (gtData.length > 0) {
+                const gtPos = new Float32Array(gtData.length * 3);
+                const gtCol = new Float32Array(gtData.length * 3);
+                for (let i = 0; i < gtData.length; i++) {
+                    gtPos[i * 3] = gtData[i].x_gt;
+                    gtPos[i * 3 + 1] = gtData[i].z_gt;
+                    gtPos[i * 3 + 2] = gtData[i].y_gt;
+                    gtCol[i * 3] = 0.1;
+                    gtCol[i * 3 + 1] = 0.9;
+                    gtCol[i * 3 + 2] = 0.5;
+                }
+                const gtGeo = new THREE.BufferGeometry();
+                gtGeo.setAttribute('position', new THREE.BufferAttribute(gtPos, 3));
+                gtGeo.setAttribute('color', new THREE.BufferAttribute(gtCol, 3));
+                const gtMat = new THREE.PointsMaterial({
+                    size: pointSizeVal * 0.7,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: opacityVal * 0.5,
+                    sizeAttenuation: true,
+                });
+                gtPointCloud = new THREE.Points(gtGeo, gtMat);
+                scene.add(gtPointCloud);
+            }
+        }
+
+        // Update legend
+        updateLegend(legendTitle, cmin, cmax, colorMap);
+        updateStats();
+    }
+
+    function updateLegend(title, min, max, colorMap) {
+        const legend = document.getElementById('colorLegend');
+        legend.style.display = 'block';
+        document.getElementById('legendTitle').textContent = title;
+        document.getElementById('legendMin').textContent = Math.round(min);
+        document.getElementById('legendMax').textContent = Math.round(max);
+
+        // Build gradient CSS
+        const stops = [];
+        for (let i = 0; i < colorMap.length; i++) {
+            const pct = (i / (colorMap.length - 1)) * 100;
+            const c = colorMap[i];
+            stops.push(`rgb(${c[0]},${c[1]},${c[2]}) ${pct}%`);
+        }
+        document.getElementById('legendGradient').style.background = `linear-gradient(90deg, ${stops.join(', ')})`;
+    }
+
+    function updateStats() {
+        if (filteredData.length === 0) return;
+
+        document.getElementById('statsBar').style.display = 'flex';
+        document.getElementById('statPoints').textContent = filteredData.length.toLocaleString();
+
+        const validDists = filteredData.filter(p => p.tof_mm > 0).map(p => p.tof_mm);
+        const meanDist = validDists.length > 0 ? (validDists.reduce((a, b) => a + b, 0) / validDists.length) : 0;
+        document.getElementById('statMeanDist').textContent = Math.round(meanDist) + ' mm';
+
+        const errors = filteredData.filter(p => p.residual_error_mm !== null).map(p => Math.abs(p.residual_error_mm));
+        const mae = errors.length > 0 ? (errors.reduce((a, b) => a + b, 0) / errors.length) : null;
+        document.getElementById('statMAE').textContent = mae !== null ? mae.toFixed(1) + ' mm' : '—';
+
+        const pans = filteredData.map(p => p.pan_deg);
+        document.getElementById('statPan').textContent = Math.min(...pans) + '°–' + Math.max(...pans) + '°';
+
+        document.getElementById('pointCount').textContent = filteredData.length.toLocaleString() + ' points';
+
+        // Update stats panel
+        const statsPanel = document.getElementById('statsPanel');
+        statsPanel.style.display = 'block';
+        const statsBody = document.getElementById('statsBody');
+        
+        const validCount = filteredData.filter(p => p.tof_mm > 0).length;
+        const gtCount = filteredData.filter(p => p.gt_distance_mm).length;
+        const tilts = [...new Set(filteredData.map(p => p.tilt_deg))].sort((a,b) => a-b);
+        
+        statsBody.innerHTML = `
+            <div class="tooltip-row"><span class="tooltip-key">Valid returns</span><span class="tooltip-val">${validCount}</span></div>
+            <div class="tooltip-row"><span class="tooltip-key">With GT</span><span class="tooltip-val">${gtCount}</span></div>
+            <div class="tooltip-row"><span class="tooltip-key">Mean dist</span><span class="tooltip-val">${Math.round(meanDist)} mm</span></div>
+            <div class="tooltip-row"><span class="tooltip-key">MAE</span><span class="tooltip-val">${mae !== null ? mae.toFixed(1) + ' mm' : '—'}</span></div>
+            <div class="tooltip-row"><span class="tooltip-key">Tilt range</span><span class="tooltip-val">${tilts[0]}°–${tilts[tilts.length-1]}°</span></div>
+            <div class="tooltip-row"><span class="tooltip-key">Tilt steps</span><span class="tooltip-val">${tilts.length}</span></div>
+        `;
+    }
+
+    // ─── Camera Views ───────────────────────────────────────────────
+    function setView(preset) {
+        const d = 3000;
+        switch (preset) {
+            case 'front': camera.position.set(0, 0, d); break;
+            case 'top':   camera.position.set(0, d, 0); break;
+            case 'side':  camera.position.set(d, 0, 0); break;
+            case 'iso':   camera.position.set(d, d, d); break;
+        }
+        controls.target.set(0, 0, 0);
+        controls.update();
+    }
+
+    function resetCamera() {
+        camera.position.set(2000, 2000, 2000);
+        controls.target.set(0, 0, 0);
+        controls.update();
+    }
+
+    // ─── File Loading ───────────────────────────────────────────────
+    function loadFile(file) {
+        document.getElementById('welcome').style.display = 'none';
+        document.getElementById('loading').classList.remove('hidden');
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            rawData = parseCSV(text);
+
+            // Populate scan filter
+            const scanIds = [...new Set(rawData.map(p => p.scan_id))].sort((a, b) => a - b);
+            const scanFilter = document.getElementById('scanFilter');
+            scanFilter.innerHTML = '<option value="all">All Scans (' + rawData.length + ' pts)</option>';
+            scanIds.forEach(id => {
+                const count = rawData.filter(p => p.scan_id === id).length;
+                const cond = rawData.find(p => p.scan_id === id);
+                const label = cond && cond.condition_label ? cond.condition_label : '';
+                scanFilter.innerHTML += `<option value="${id}">Scan ${id} ${label ? '(' + label + ')' : ''} — ${count} pts</option>`;
+            });
+
+            buildPointCloud();
+            document.getElementById('loading').classList.add('hidden');
+
+            // Auto-center camera on point cloud
+            if (filteredData.length > 0) {
+                const xs = filteredData.map(p => p.x), ys = filteredData.map(p => p.y), zs = filteredData.map(p => p.z);
+                const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+                const cy = (Math.min(...zs) + Math.max(...zs)) / 2;
+                const cz = (Math.min(...ys) + Math.max(...ys)) / 2;
+                controls.target.set(cx, cy, cz);
+                const range = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys), Math.max(...zs) - Math.min(...zs));
+                camera.position.set(cx + range, cy + range * 0.7, cz + range);
+                controls.update();
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // ─── Event Bindings ─────────────────────────────────────────────
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        if (e.target.files.length > 0) loadFile(e.target.files[0]);
+    });
+
+    // Drag and drop
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#3b82f6'; });
+    dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = 'rgba(59, 130, 246, 0.3)'; });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+        if (e.dataTransfer.files.length > 0) loadFile(e.dataTransfer.files[0]);
+    });
+
+    // Control change handlers
+    ['scanFilter', 'colorMode', 'showValidOnly', 'showGTCloud'].forEach(id => {
+        document.getElementById(id).addEventListener('change', buildPointCloud);
+    });
+
+    document.getElementById('pointSize').addEventListener('input', function() {
+        document.getElementById('pointSizeVal').textContent = this.value;
+        if (pointCloud) pointCloud.material.size = parseFloat(this.value);
+        if (gtPointCloud) gtPointCloud.material.size = parseFloat(this.value) * 0.7;
+    });
+
+    document.getElementById('opacity').addEventListener('input', function() {
+        document.getElementById('opacityVal').textContent = this.value;
+        if (pointCloud) pointCloud.material.opacity = parseFloat(this.value);
+        if (gtPointCloud) gtPointCloud.material.opacity = parseFloat(this.value) * 0.5;
+    });
+
+    // ─── Init ────────────────────────────────────────────────────────
+    initScene();
+    </script>
+</body>
+</html>
