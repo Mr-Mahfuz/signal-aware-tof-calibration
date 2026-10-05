@@ -1,0 +1,549 @@
+\documentclass[12pt,a4paper]{article}
+
+% ---------------------------------------------------------
+% Packages
+% ---------------------------------------------------------
+\usepackage[a4paper,
+            left=1in,
+            right=1in,
+            top=0.8in,
+            bottom=0.8in]{geometry}
+
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage{pgfgantt}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{amssymb}
+\usepackage{pifont}
+\usepackage{ragged2e}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+
+% ---------------------------------------------------------
+% General Formatting
+% ---------------------------------------------------------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\onehalfspacing
+
+% Section formatting
+\titleformat{\section}
+  {\bfseries\large}
+  {\thesection.}
+  {0.5em}
+  {}
+
+\titlespacing*{\section}
+  {0pt}
+  {12pt}
+  {6pt}
+
+% ---------------------------------------------------------
+% Header / Footer
+% ---------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyfoot[R]{\thepage\;|\;P a g e}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ---------------------------------------------------------
+% Table formatting
+% ---------------------------------------------------------
+\renewcommand{\arraystretch}{1.25}
+
+% ---------------------------------------------------------
+% Custom commands
+% ---------------------------------------------------------
+
+% Green check mark similar to the original template
+\newcommand{\greencheck}{%
+    \colorbox{green!50}{\Large\checkmark}%
+}
+
+% Placeholder text
+\newcommand{\placeholder}[1]{\textit{[#1]}}
+
+% ---------------------------------------------------------
+% Document
+% ---------------------------------------------------------
+\begin{document}
+
+% =========================================================
+% COVER PAGE
+% =========================================================
+
+\begin{titlepage}
+\thispagestyle{empty}
+
+\begin{center}
+
+% ---------------------------------------------------------
+% University Logo
+% ---------------------------------------------------------
+% Place the Varendra University logo in the same folder
+% and name it "vu_logo.png".
+%
+% If you do not want to use a logo, comment the next line.
+% ---------------------------------------------------------
+
+\IfFileExists{vu_logo.png}{
+    \includegraphics[width=1.0in]{vu_logo.png}
+    \vspace{0.2in}
+}{}
+
+{\Large\bfseries Varendra University}
+
+\vspace{0.08in}
+
+{\large\bfseries Department of Computer Science and Engineering}
+
+\vspace{0.55in}
+
+{\large\bfseries Undergraduate Thesis/Project Proposal}
+
+\vspace{0.55in}
+
+{\large\bfseries Title of the Thesis/Project}
+
+\vspace{0.08in}
+
+{\itshape (Write your group proposal title)}
+
+\vfill
+
+{\bfseries Submitted by:}
+
+\vspace{0.25in}
+
+Name of the Student-1 (ID of the Student-1)\\
+Name of the Student-2 (ID of the Student-2)\\
+Name of the Student-3 (ID of the Student-3)
+
+\vspace{0.25in}
+
+%\begin{tabular}{rl}
+\textbf{Program:} & B.Sc. in Computer Science and Engineering\\
+\textbf{Semester:} & 7th\\
+\textbf{Course Code:} & CSE 4100\\
+\textbf{Course Title:} & Project or Thesis with Seminar part I
+%\end{tabular}
+
+\vfill
+
+{\bfseries Supervisor:}
+
+\vspace{0.08in}
+
+[Full Name]\\
+[Designation]\\
+[Department Name]
+
+\vfill
+
+{\bfseries Submission Date:} [DD Month YYYY]
+
+\end{center}
+
+\end{titlepage}
+
+
+% =========================================================
+% PAGE 2
+% =========================================================
+
+\setcounter{page}{1}
+
+\section{Introduction}
+
+Introduce the topic, its background, and significance, highlighting its
+relevance to current technologies \cite{james2021intro}. Ensure that the section adequately discusses the principles or computational frameworks of the proposed solution.
+
+\vspace{0.1in}
+
+\textit{(Approx. 200--300 words)}
+
+\vspace{0.15in}
+
+
+\section{Literature Review / Background Study}
+
+Summarize 3--5 key existing works (research papers, systems, tools,
+products). Explain their contributions and clearly identify gaps or
+limitations that your work addresses.
+
+Use proper citations --- IEEE style recommended like \cite{hasan2023thesis}, \cite{rahman2024ai}.
+
+
+\section{Problem Statement}
+
+Describe the specific problem or challenge your thesis/project will solve.
+For a thesis, this should reflect a research gap \cite{uci2025dataset}. For projects, this may
+involve real-world inefficiencies or limitations \cite{smith2023ml}.
+
+\vspace{0.1in}
+
+Use 1--2 focused paragraphs.
+
+
+\section{Objectives}
+
+List the intended goals of your work. These should be SMART --- Specific,
+Measurable, Achievable, Relevant, and Time-bound.
+
+\begin{itemize}[leftmargin=0.35in]
+    \item Objective 1
+    \item Objective 2
+    \item Objective 3
+    \item Objective 4
+\end{itemize}
+
+
+\section{Proposed Methodology / System Design}
+
+Explain how you plan to achieve your objectives.
+
+For a thesis, describe your research methods, models, and/or data.
+For a project, define the system architecture, modules, tools, and
+process flow.
+
+\vspace{0.1in}
+
+Include diagrams or flowcharts if applicable.
+
+
+\section{Method Justification}
+
+Explain and justify why the selected methodology/system design fits the
+FYDP objectives/requirements.
+
+
+\section{Expected Outcomes}
+
+List or describe the main deliverables or findings you expect to achieve ---
+e.g., working system, experimental results, research insights, prototype,
+etc.
+
+
+% =========================================================
+% PAGE 3
+% =========================================================
+
+%\newpage
+
+\section{Tools and Technologies to Be Used}
+
+List the software, programming languages, libraries, hardware, or datasets
+that will be used to implement or support your work.
+
+
+\section{References}
+
+\renewcommand{\refname}{}
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\section{Work Division and Team Management}
+
+Describe how tasks will be distributed among team members. Use a Table \ref{tab:work-division} to show task assignment. Clarify roles.
+
+\begin{table}[H]
+\centering
+\caption{Work Division and Team Management}
+\label{tab:work-division}
+\begin{tabularx}{\textwidth}{|p{1.25in}|X|p{1.4in}|}
+\hline
+\textbf{Team Member} &
+\textbf{Assigned Tasks} &
+\textbf{Role} \\
+\hline
+
+Student-1 &
+Literature review, methodology, implementation &
+Member \\
+\hline
+
+Student-2 &
+Data collection, system development, testing &
+Member \\
+\hline
+
+Student-3 &
+Documentation, analysis, presentation &
+Member \\
+\hline
+
+\end{tabularx}
+\end{table}
+
+
+\section{Timeline}
+
+Provide a time-based breakdown of your work (e.g., by weeks or months).
+Use a table or Gantt chart.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{ganttchart}[
+    hgrid,
+    vgrid,
+    x unit=1.0cm,
+    y unit title=0.7cm,
+    y unit chart=0.65cm,
+    title height=1,
+    bar height=0.5,
+    bar label font=\small,
+    title label font=\small\bfseries
+]{1}{12}
+
+\gantttitle{Thesis Research Timeline}{12} \\
+
+\gantttitle{M1}{1}
+\gantttitle{M2}{1}
+\gantttitle{M3}{1}
+\gantttitle{M4}{1}
+\gantttitle{M5}{1}
+\gantttitle{M6}{1}
+\gantttitle{M7}{1}
+\gantttitle{M8}{1}
+\gantttitle{M9}{1}
+\gantttitle{M10}{1}
+\gantttitle{M11}{1}
+\gantttitle{M12}{1} \\
+
+\ganttbar{Literature Review}{1}{3} \\
+\ganttbar{Research Problem and Objectives}{1}{2} \\
+\ganttbar{Research Framework / Methodology}{3}{5} \\
+\ganttbar{Data Collection and Preprocessing}{4}{6} \\
+\ganttbar{Proposed Method Development}{5}{8} \\
+\ganttbar{Experimental Investigation}{7}{9} \\
+\ganttbar{Performance Evaluation}{8}{10} \\
+\ganttbar{Results and Discussion}{9}{10} \\
+\ganttbar{Thesis Writing}{9}{11} \\
+\ganttbar{Revision and Finalization}{11}{12} \\
+\ganttbar{Thesis Defense}{12}{12}
+
+\end{ganttchart}%
+}
+\caption{Proposed 12-Month Thesis Timeline}
+\label{fig:thesis_timeline}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{ganttchart}[
+    hgrid,
+    vgrid,
+    x unit=1.0cm,
+    y unit title=0.7cm,
+    y unit chart=0.65cm,
+    title height=1,
+    bar height=0.5,
+    bar label font=\small,
+    title label font=\small\bfseries
+]{1}{12}
+
+\gantttitle{Project Timeline}{12} \\
+
+\gantttitle{M1}{1}
+\gantttitle{M2}{1}
+\gantttitle{M3}{1}
+\gantttitle{M4}{1}
+\gantttitle{M5}{1}
+\gantttitle{M6}{1}
+\gantttitle{M7}{1}
+\gantttitle{M8}{1}
+\gantttitle{M9}{1}
+\gantttitle{M10}{1}
+\gantttitle{M11}{1}
+\gantttitle{M12}{1} \\
+
+\ganttbar{Literature Review}{1}{2} \\
+
+\ganttbar{Problem Identification}{1}{2} \\
+
+\ganttbar{Requirement Analysis}{2}{3} \\
+
+\ganttbar{System Design / Methodology}{3}{4} \\
+
+\ganttbar{Data Collection and Preparation}{4}{5} \\
+
+\ganttbar{System Implementation}{5}{8} \\
+
+\ganttbar{Testing and Debugging}{7}{9} \\
+
+\ganttbar{Performance Evaluation}{8}{10} \\
+
+\ganttbar{Documentation}{9}{11} \\
+
+\ganttbar{Final Review and Refinement}{11}{12} \\
+
+\ganttbar{Final Presentation / Deployment}{12}{12}
+
+\end{ganttchart}%
+}
+\caption{Proposed 12-Month Project Timeline}
+\label{fig:project_timeline}
+\end{figure}
+
+\section{Cost-Benefit Analysis}
+
+Estimate any costs for tools, software, hosting, datasets, or devices.
+Mention if it is low-cost, cost-effective, or funded.
+
+Assess the economic feasibility, compare different options, and select the
+most cost-effective one. If no cost, state that clearly.
+
+
+\section{Constraints and Limitations}
+
+Mention only the constraints relevant to your work. These may include
+economic, environmental, ethical, health and safety, social, political,
+or sustainability-related factors that affect the design, development,
+or research process.
+
+
+\section{Societal Impact}
+
+Briefly explain how your proposed work will benefit society. This may
+include improvements in quality of life, accessibility, education,
+public health, digital inclusion, environmental awareness, or other
+social aspects.
+
+Focus on real-world relevance and ethical contribution to the community
+or specific user groups.
+
+
+\section{Complex Engineering Problem Mapping}
+
+Fill this table by reflecting how your proposal maps with the complex
+engineering problem domains.
+
+\begin{table}[H]
+\centering
+\caption{Mapping with complex problem solving.}
+\label{tab:complex-problem}
+
+\small
+\renewcommand{\arraystretch}{1.3}
+
+\begin{tabularx}{\textwidth}{|
+>{\centering\arraybackslash}X|
+>{\centering\arraybackslash}X|
+>{\centering\arraybackslash}X|
+>{\centering\arraybackslash}X|
+>{\centering\arraybackslash}X|
+>{\centering\arraybackslash}X|
+>{\centering\arraybackslash}X|}
+\hline
+
+\textbf{WP1} &
+\textbf{WP2} &
+\textbf{WP3} &
+\textbf{WP4} &
+\textbf{WP5} &
+\textbf{WP6} &
+\textbf{WP7} \\
+\hline
+
+Depth of Knowledge &
+Range of Conflicting Requirements &
+Depth of Analysis &
+Familiarity of Issues &
+Extent of Applicable Codes &
+Extent of Stakeholder Involvement &
+Interdependence \\
+\hline
+
+{\Large\checkmark} &
+{\Large\checkmark} &
+{\Large\checkmark} &
+{\Large\checkmark} &
+&
+&
+\\
+\hline
+
+\end{tabularx}
+\end{table}
+
+
+\section{Complex Engineering Activity Mapping}
+
+Justify which complex engineering activity level your proposal aligns with.
+
+\begin{table}[H]
+\centering
+\caption{Mapping with complex engineering activities.}
+\label{tab:complex-activity}
+
+\small
+\renewcommand{\arraystretch}{1.3}
+
+\begin{tabularx}{\textwidth}{|
+>{\centering\arraybackslash}X|
+>{\centering\arraybackslash}X|
+>{\centering\arraybackslash}X|
+>{\centering\arraybackslash}X|
+>{\centering\arraybackslash}X|}
+\hline
+
+\textbf{EA1} &
+\textbf{EA2} &
+\textbf{EA3} &
+\textbf{EA4} &
+\textbf{EA5} \\
+\hline
+
+Range of resources &
+Level of Interaction &
+Innovation &
+Consequences for society and environment &
+Familiarity \\
+\hline
+
+{\Large\checkmark} &
+{\Large\checkmark} &
+&
+&
+\\
+\hline
+
+\end{tabularx}
+\end{table}
+
+
+\section{Green Computing Considerations}
+
+Mention how your work considers energy efficiency, environmental
+sustainability, or digital carbon footprint reduction.
+
+Even if indirectly related, reflect awareness of green ICT principles.
+
+
+\section{Lifelong Learning and Personal Development}
+
+State how this work will contribute to your knowledge, skills, and
+long-term professional growth.
+
+For example, learning new technologies, teamwork, research skills, etc.
+
+
+\end{document}

@@ -1,0 +1,1337 @@
+    \documentclass[12pt,a4paper]{article}
+
+    % ---------------------------------------------------------
+    % Packages
+    % ---------------------------------------------------------
+    \usepackage[a4paper,
+                left=1in,
+                right=1in,
+                top=0.8in,
+                bottom=0.8in]{geometry}
+
+    \usepackage{newtxtext}
+    \usepackage{newtxmath}
+    \usepackage{pgfgantt}
+    \usepackage{graphicx}
+    \usepackage{amssymb}
+    \usepackage{array}
+    \usepackage{tabularx}
+    \usepackage{longtable}
+    \usepackage{booktabs}
+    \usepackage{multirow}
+    \usepackage{enumitem}
+    \usepackage{setspace}
+    \usepackage{fancyhdr}
+    \usepackage{titlesec}
+    \usepackage{caption}
+    \usepackage{subcaption}
+    \usepackage{float}
+    \usepackage{amssymb}
+    \usepackage{pifont}
+    \usepackage{ragged2e}
+    \usepackage{url}
+    \usepackage[hidelinks]{hyperref}
+    \usepackage{xcolor}
+    \usepackage{tikz}
+    \usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc, decorations.markings}
+    \usepackage{amsmath}
+    \usepackage{colortbl}
+
+    % ---------------------------------------------------------
+    % Custom Colors
+    % ---------------------------------------------------------
+    \definecolor{darkblue}{RGB}{0,51,102}
+    \definecolor{successgreen}{RGB}{34,139,34}
+    \definecolor{warningred}{RGB}{178,34,34}
+
+    % ---------------------------------------------------------
+    % General Formatting
+    % ---------------------------------------------------------
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt}
+
+    \onehalfspacing
+
+    % Section formatting
+    \titleformat{\section}
+    {\bfseries\large}
+    {\thesection.}
+    {0.5em}
+    {}
+
+    \titlespacing*{\section}
+    {0pt}
+    {12pt}
+    {6pt}
+
+    \titleformat{\subsection}
+    {\bfseries\normalsize}
+    {\thesubsection.}
+    {0.5em}
+    {}
+
+    \titlespacing*{\subsection}
+    {0pt}
+    {8pt}
+    {4pt}
+
+    % ---------------------------------------------------------
+    % Header / Footer
+    % ---------------------------------------------------------
+    \pagestyle{fancy}
+    \fancyhf{}
+
+    \fancyfoot[R]{\thepage\;|\;P a g e}
+
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+
+    % ---------------------------------------------------------
+    % Table formatting
+    % ---------------------------------------------------------
+    \renewcommand{\arraystretch}{1.25}
+
+    % ---------------------------------------------------------
+    % Color definitions
+    % ---------------------------------------------------------
+    \definecolor{darkblue}{RGB}{0,51,102}
+    \definecolor{lightgray}{RGB}{240,240,240}
+    \definecolor{successgreen}{RGB}{34,139,34}
+    \definecolor{warningred}{RGB}{178,34,34}
+
+    % ---------------------------------------------------------
+    % Custom commands
+    % ---------------------------------------------------------
+
+    % Green check mark similar to the original template
+    \newcommand{\greencheck}{%
+        \colorbox{green!50}{\Large\checkmark}%
+    }
+
+    % ---------------------------------------------------------
+    % Document
+    % ---------------------------------------------------------
+    \begin{document}
+
+    % =========================================================
+    % COVER PAGE
+    % =========================================================
+
+    \begin{titlepage}
+    \thispagestyle{empty}
+
+    \begin{center}
+
+    % ---------------------------------------------------------
+    % University Logo
+    % ---------------------------------------------------------
+
+    \IfFileExists{vu_logo.png}{
+        \includegraphics[width=1.0in]{vu_logo.png}
+        \vspace{0.2in}
+    }{}
+
+    {\Large\bfseries Varendra University}
+
+    \vspace{0.08in}
+
+    {\large\bfseries Department of Computer Science and Engineering}
+
+    \vspace{0.55in}
+
+    {\large\bfseries Undergraduate Thesis Proposal}
+
+    \vspace{0.55in}
+
+    {\large\bfseries Signal-Aware Machine Learning Calibration of a Low-Cost\\[4pt]
+    Pan-Tilt Time-of-Flight LiDAR for Indoor 3D Reconstruction}
+
+    \vfill
+
+    {\bfseries Submitted by:}
+
+    \vspace{0.25in}
+
+    Oishi Farzana (232311294)\\
+    Mahfuz Ahmad (232311307)\\
+    Abdul Momit Talukder (232311320)
+
+    \vspace{0.25in}
+
+    \textbf{Program:} B.Sc. in Computer Science and Engineering\\
+    \textbf{Semester:} 7th\\
+    \textbf{Section:} E\\
+    \textbf{Course Code:} CSE 4100\\
+    \textbf{Course Title:} Project or Thesis with Seminar Part I
+
+    \vfill
+
+    {\bfseries Supervisor:}
+
+    \vspace{0.08in}
+
+    Mohd Ruhul Ameen\\
+    Lecturer\\
+    Department of Computer Science and Engineering
+
+    \vfill
+
+    {\bfseries Submission Date:} 07 October 2026
+
+    \end{center}
+
+    \end{titlepage}
+
+
+    % =========================================================
+    % TABLE OF CONTENTS
+    % =========================================================
+
+    \setcounter{page}{1}
+
+    \tableofcontents
+    \newpage
+
+
+    % =========================================================
+    % SECTION 1: INTRODUCTION
+    % =========================================================
+
+    \section{Introduction}
+
+    Indoor three-dimensional (3D) mapping is a foundational capability for mobile robotics, autonomous navigation, augmented reality, structural inspection, and digital twin construction \cite{hess2016real, rusu20113d}. Commercial LiDAR systems---such as those manufactured by Velodyne, SICK, and Hokuyo---deliver high-resolution, dense point clouds with millimeter-level accuracy, but their costs typically range from \$500 to over \$10,000, rendering them impractical for educational laboratories, hobbyist robotics, and resource-constrained embedded applications in developing countries \cite{amann2001laser, behroozpour2017lidar}.
+
+    A promising low-cost alternative is to mount a single-point Time-of-Flight (ToF) sensor on a two-axis pan-tilt mechanism using low-cost DC/N20 motors, sweeping it across the environment to collect one distance measurement at a time. Each measurement, combined with the corresponding pan and tilt angles, can be converted into a 3D Cartesian coordinate using the spherical-to-Cartesian transform. Thousands of such sequential measurements compose a 3D point cloud---a spatial representation of the scanned environment \cite{willis2009design, jimenez20143d}.
+
+    The STMicroelectronics VL53L1X sensor is one of the most widely adopted single-point ToF sensors, integrating a 940\,nm VCSEL (Vertical-Cavity Surface-Emitting Laser) emitter, a 16$\times$16 SPAD (Single Photon Avalanche Diode) receiver array, and full timing/signal-processing logic into a single compact package costing approximately \$4 USD \cite{stmicro2018vl53l1x}. However, while the VL53L1X datasheet promises $\pm$3\% ranging accuracy under ideal conditions, real-world indoor scanning introduces systematic errors from multiple sources: multipath interference (MPI), target surface reflectivity variations, ambient light contamination, and mechanical jitter from low-cost pan-tilt actuators \cite{foix2011lock, hansard2012time, corti2016metrological}.
+
+    This thesis proposes a \textbf{``Signal-Aware'' Machine Learning (ML) calibration} approach that exploits the sensor's internal photon telemetry---specifically, the signal return rate and ambient noise rate---as additional input features to a machine learning model that predicts and corrects measurement errors in real time. Critically, the trained model is transpiled into pure C code and deployed directly onto an ESP32 microcontroller, enabling real-time, on-device calibration without any external compute dependency. The entire hardware platform costs under \$22 USD, making it accessible for educational and research applications in resource-limited settings.
+
+    Our work further investigates the generalization of ML calibration across different indoor environments. Preliminary results suggest that multi-environment pooled training may be important for robust performance, and this will be investigated more rigorously in the full study.
+
+
+    % =========================================================
+    % SECTION 2: LITERATURE REVIEW
+    % =========================================================
+
+    \section{Literature Review / Background Study}
+
+    \subsection{ToF Sensor Error Characterization}
+
+    Time-of-Flight sensors compute distance by measuring the round-trip time of a modulated infrared laser pulse. The error characteristics of these sensors have been extensively studied. Corti et al. \cite{corti2016metrological} characterized the Kinect V2 ToF camera and found that measurement accuracy varies with temperature, range, surface properties, and radial position. Frangez et al. \cite{frangez2022assessment} demonstrated that ToF measurement accuracy varies with target distance, device temperature, and material properties, proposing improved calibration procedures. Kahlmann et al. \cite{kahlmann2006calibration} calibrated the SwissRanger camera, showing that systematic errors can be reduced through device-specific look-up tables. Lindner and Kolb \cite{lindner2006lateral} established foundational methods for combined geometric-radiometric correction of PMD sensors, while Fuchs and Hirzinger \cite{fuchs2008extrinsic} addressed extrinsic and depth calibration of ToF cameras.
+
+    \subsection{Multipath Interference}
+
+    Multipath interference (MPI) is one of the most significant error sources for ToF sensors operating in indoor environments. When emitted photons bounce off multiple surfaces before returning to the detector, the sensor averages arrival times from both direct and reflected paths, inflating the reported distance. Sabov and Kr\"uger \cite{sabov2008identification} proposed methods for identifying and correcting ``flying pixels'' caused by mixed-path returns at object boundaries. Reynolds et al. \cite{reynolds2011capturing} developed approaches for capturing ToF data with confidence measures, and Dorrington et al. \cite{dorrington2011separating} demonstrated techniques for separating true range from multi-path interference in commercial range cameras.
+
+    \subsection{Machine Learning for Depth Correction}
+
+    Recent works have demonstrated that ML models can effectively correct ToF measurement errors. Su et al. \cite{su2018deeptof} proposed DeepToF, showing that learned models can map complex ToF distortions to corrected depth maps. Agresti et al. \cite{agresti2018deep} showed that convolutional neural networks can exploit spatial context to reduce MPI artifacts. He et al. \cite{he2017depth} formalized residual error analysis for ToF cameras---a direct inspiration for our signal-aware approach. However, most existing approaches target imaging-class ToF cameras running on GPU-capable systems, leaving a gap for single-point sensors on microcontrollers.
+
+    \subsection{Low-Cost LiDAR Systems}
+
+    Several works have explored low-cost 3D scanning. Willis et al. \cite{willis2009design} presented an inexpensive LIDAR scanning system design. Jimenez et al. \cite{jimenez20143d} built a 3D scanner from a ToF camera and a pan-tilt unit. Kim and Lee \cite{kim2015design} designed and calibrated a pan-tilt ToF scanning system. Park et al. \cite{fpga2019lowcost} proposed an FPGA-based low-cost 3D LiDAR, and Low et al. \cite{low2024cost3d} developed a low-cost 3D mapping system using 2D LiDAR and monocular cameras. None of these works combine on-device ML calibration with signal telemetry features.
+
+    \subsection{TinyML and Edge AI}
+
+    The emerging field of TinyML focuses on deploying ML models on ultra-low-power microcontrollers \cite{warden2019tinyml, wang2020tinyml}. Hayajneh et al. \cite{hayajneh2024tinyml} demonstrated TinyML-empowered transfer learning on edge devices. Banbury et al. \cite{banbury2021benchmarking} established standardized benchmarks for TinyML systems. David et al. \cite{david2021tensorflow} presented TensorFlow Lite Micro for embedded ML, and Lin et al. \cite{lin2020mcunet} proposed MCUNet for tiny deep learning on IoT devices. Our work contributes to this field by demonstrating tree-model transpilation as a zero-dependency alternative to TFLite for sensor calibration on ESP32.
+
+    \textbf{Research Gap:} While prior work has addressed ToF calibration using ML and has explored TinyML deployment independently, few existing works combine: (1) signal-telemetry-aware calibration of a single-point ToF sensor, (2) multi-environment generalization analysis, and (3) on-device model deployment via tree transpilation on a microcontroller---all within a sub-\$22 hardware platform.
+
+    \subsection{Comparative Summary of Related Work}
+
+    Table~\ref{tab:lit_comparison} summarizes key related works and identifies how each differs from our proposed approach.
+
+    \begin{table}[H]
+    \centering
+    \caption{Comparative summary of related work.}
+    \label{tab:lit_comparison}
+    \small
+    \begin{tabularx}{\textwidth}{|p{1.1in}|p{1.0in}|X|p{1.1in}|}
+    \hline
+    \textbf{Study} & \textbf{Sensor Type} & \textbf{Calibration Method} & \textbf{Limitation} \\
+    \hline
+    Kahlmann et al. \cite{kahlmann2006calibration} & SwissRanger (ToF camera) & Device-specific LUT & Single device, no ML \\
+    \hline
+    Su et al. \cite{su2018deeptof} & ToF camera & Deep learning (CNN) & Requires GPU inference \\
+    \hline
+    Agresti et al. \cite{agresti2018deep} & ToF camera & CNN for MPI removal & High compute cost \\
+    \hline
+    Kim \& Lee \cite{kim2015design} & Pan-tilt ToF & Geometric calibration & No ML, no telemetry \\
+    \hline
+    Lin et al. \cite{lin2020mcunet} & General MCU & TinyML (MCUNet) & Not applied to ToF \\
+    \hline
+    Willis et al. \cite{willis2009design} & Rotating LiDAR & Hardware design only & No calibration model \\
+    \hline
+    \textbf{This Work} & \textbf{VL53L1X (single-point)} & \textbf{Signal-aware ML + tree transpilation on ESP32} & \textbf{Two environments tested} \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+
+    % =========================================================
+    % SECTION 3: PROBLEM STATEMENT
+    % =========================================================
+
+    \section{Problem Statement}
+
+    Low-cost ToF sensors such as the VL53L1X exhibit measurement errors that depend on multiple interacting variables: distance, scan angle, target surface reflectivity, ambient lighting conditions, and mechanical vibration. Traditional calibration methods employ polynomial look-up tables indexed solely by measured distance \cite{lindner2010time, kahlmann2006calibration}, assuming that range error is a one-dimensional function. This assumption is often insufficient in real scanning setups where error is a multi-dimensional function of the measurement context.
+
+    Furthermore, existing ML-based depth correction approaches \cite{su2018deeptof, agresti2018deep, guo2021tackling} target imaging-class ToF cameras with GPU-based inference, and do not address single-point ToF sensors on resource-constrained microcontrollers. Even among low-cost LiDAR systems, none exploit the sensor's internal diagnostic telemetry (signal rate, ambient rate) as calibration features, and none evaluate whether ML calibration models generalize across different indoor environments.
+
+    This thesis addresses the following core problem: \textit{Can the internal photon telemetry signals exposed by the VL53L1X sensor be leveraged by a machine learning model to predict and correct range measurement errors in real time on an ESP32 microcontroller, and can such calibration generalize across different indoor environments?}
+
+    The problem is further compounded by the severe memory and compute constraints of the ESP32 platform (4\,MB flash, 520\,KB SRAM, 240\,MHz dual-core), which limits the size and complexity of deployable models.
+
+
+    % =========================================================
+    % SECTION 4: OBJECTIVES
+    % =========================================================
+
+    \section{Objectives}
+
+    The following objectives are established for this thesis, aligned with SMART criteria:
+
+    \begin{itemize}[leftmargin=0.35in]
+        \item \textbf{Objective 1 (Hardware Platform):} Design, assemble, and evaluate multiple functional 3D LiDAR scanning platforms by evaluating alternative pan-tilt mechanisms (e.g., DC gear motors, N20 motors, servos) and auxiliary sensing configurations around the VL53L1X to find the optimal balance of accuracy, power, and cost under \$25 USD.
+
+        \item \textbf{Objective 2 (Data Collection):} Collect a comprehensive dataset of over 150,000 ToF measurements across numerous diverse indoor and outdoor environments under challenging conditions (varied lighting, surface materials, dynamic obstacles), extending significantly beyond our initial two-campaign pilot study.
+
+        \item \textbf{Objective 3 (Signal-Aware ML Calibration):} Train and evaluate machine learning models (Linear Regression, Random Forest, XGBoost, Gradient Boosting, MLP) that use both geometric features (distance, pan angle, tilt angle) and sensor telemetry features (signal rate, ambient rate, temperature) to predict and correct range measurement errors, targeting a Mean Absolute Error (MAE) below 25\,mm.
+
+        \item \textbf{Objective 4 (Generalization Analysis):} Quantify the cross-environment generalization performance of ML calibration models by evaluating single-environment models on unseen environments and comparing against multi-environment pooled training.
+
+        \item \textbf{Objective 5 (Edge Deployment):} Deploy the trained calibration model onto the ESP32 microcontroller via model-to-C transpilation (m2cgen), achieving real-time inference (latency $<$ 100\,$\mu$s per prediction) with zero external dependencies and a code footprint $<$ 500\,KB.
+
+        \item \textbf{Objective 6 (3D Reconstruction):} Generate and visualize 3D point clouds from calibrated scan data, demonstrating improved spatial accuracy compared to raw sensor measurements.
+    \end{itemize}
+
+
+    % =========================================================
+    % SECTION 5: PROPOSED METHODOLOGY / SYSTEM DESIGN
+    % =========================================================
+
+    \section{Proposed Methodology / System Design}
+
+    \subsection{Overall System Architecture}
+
+    The proposed system follows a five-stage pipeline: (1) hardware assembly and firmware development, (2) data collection across multiple environments, (3) ML model training and evaluation, (4) model transpilation and edge deployment, and (5) 3D point cloud reconstruction. Figure~\ref{fig:system_architecture} illustrates the end-to-end system architecture.
+
+    \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.4cm,
+        stage/.style={rectangle, draw=darkblue, fill=#1, text width=2.4cm, minimum height=1.2cm, align=center, rounded corners=4pt, font=\scriptsize\bfseries, line width=1pt},
+        detail/.style={rectangle, draw=darkblue!50, fill=white, text width=2.4cm, minimum height=0.9cm, align=center, rounded corners=2pt, font=\tiny, line width=0.5pt},
+        arrow/.style={-{Stealth[length=3mm, width=2.5mm]}, line width=1.2pt, darkblue},
+        dasharrow/.style={-{Stealth[length=2.5mm]}, line width=0.8pt, darkblue!60, dashed}
+    ]
+
+    % Row 1: Main pipeline stages (evenly spaced)
+    \node[stage=green!12] (hw) {Stage 1\\Hardware\\Platform};
+    \node[stage=yellow!15, right=0.4cm of hw] (data) {Stage 2\\Data\\Collection};
+    \node[stage=orange!15, right=0.4cm of data] (ml) {Stage 3\\ML Training\\Pipeline};
+    \node[stage=red!10, right=0.4cm of ml] (deploy) {Stage 4\\ESP32 Edge\\Deployment};
+    \node[stage=purple!12, right=0.4cm of deploy] (output) {Stage 5\\3D Point\\Cloud};
+
+    % Row 2: Detail boxes (directly below each stage)
+    \node[detail, below=0.4cm of hw] (hw_d) {VL53L1X ToF Sensor\\ESP32 + DC \& N20 Motors\\MPU6050, DHT11, INA219};
+    \node[detail, below=0.4cm of data] (data_d) {Multiple environments\\150,000+ target measurements\\Scan-level validation};
+    \node[detail, below=0.4cm of ml] (ml_d) {EDA \& Preprocessing\\Signal-Aware Calibration\\Model Selection};
+    \node[detail, below=0.4cm of deploy] (deploy_d) {m2cgen Transpilation\\Decision Tree (Depth 12)\\$<$100\,$\mu$s Inference};
+    \node[detail, below=0.4cm of output] (output_d) {Calibrated Coordinates\\Interactive 3D Viewer\\Matplotlib Plots};
+
+    % Main pipeline arrows
+    \draw[arrow] (hw) -- (data);
+    \draw[arrow] (data) -- (ml);
+    \draw[arrow] (ml) -- (deploy);
+    \draw[arrow] (deploy) -- (output);
+
+    % Stage-to-detail arrows
+    \draw[dasharrow] (hw) -- (hw_d);
+    \draw[dasharrow] (data) -- (data_d);
+    \draw[dasharrow] (ml) -- (ml_d);
+    \draw[dasharrow] (deploy) -- (deploy_d);
+    \draw[dasharrow] (output) -- (output_d);
+
+    \end{tikzpicture}
+    \caption{End-to-end system architecture of the proposed Signal-Aware ML calibration pipeline.}
+    \label{fig:system_architecture}
+    \end{figure}
+
+
+    \subsection{Hardware Design}
+
+    The proposed scanning platform consists of nine components totaling under \$22 USD, as detailed in Table~\ref{tab:bom}. The VL53L1X ToF sensor will be mounted on a tilt motor, which is itself mounted on a pan motor, creating a two-axis gimbal. The sensor's optical center is positioned at the intersection of both rotation axes, defining the coordinate system origin $(0, 0, 0)$.
+
+    \begin{table}[H]
+    \centering
+    \caption{Bill of Materials for the proposed scanning platform.}
+    \label{tab:bom}
+    \begin{tabularx}{\textwidth}{|p{1.5in}|p{1.3in}|X|p{0.5in}|}
+    \hline
+    \textbf{Component} & \textbf{Model} & \textbf{Role} & \textbf{Cost} \\
+    \hline
+    ToF Sensor & VL53L1X (I2C) & Distance measurement + signal telemetry & \$6 \\
+    \hline
+    Microcontroller & ESP32 DevKit V1 & Firmware, motor control, ML inference & \$4 \\
+    \hline
+    Pan Motor & 12V DC Gear Motor & Horizontal sweep 0\textdegree--180\textdegree & \$0.4 \\
+    \hline
+    Tilt Motor & N20 Motor & Vertical sweep 90\textdegree--180\textdegree & \$2 \\
+    \hline
+    Motor Driver & TB6612FNG & Motor speed and direction control & \$2 \\
+    \hline
+    3D Axis Monitor & MPU6050 (I2C) & Dual axis movement monitoring & \$2 \\
+    \hline
+    Temperature Sensor & DHT11 (GPIO 4) & Ambient thermal drift monitoring & \$1 \\
+    \hline
+    Current Monitor & INA219 (I2C) & Power consumption logging & \$2 \\
+    \hline
+    Power supply and others & Power supply and motor housing & Individual power to motors and sensors & \$2 \\
+    \hline
+    \multicolumn{3}{|r|}{\textbf{Total}} & \textbf{<\$22} \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+    For the preliminary feasibility study, an SG90-based pan-tilt prototype was assembled and used for the two initial data-collection campaigns, as shown in Figure~\ref{fig:hardware}.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{figures/hardware_setup.png}
+    \caption{Preliminary hardware prototype used during the two pilot data-collection campaigns. The prototype used SG90 servo motors for pan-tilt actuation and an ESP32 with the VL53L1X ToF sensor. The final thesis platform will use the optimized pan-tilt actuator configuration selected through comparative evaluation.}
+    \label{fig:hardware}
+    \end{figure}
+
+
+    \subsection{Sensor Telemetry: The ``Signal-Aware'' Features}
+
+    The key innovation of this work is the exploitation of the VL53L1X's internal diagnostic metrics as ML input features. Beyond the raw distance measurement, the sensor exposes two telemetry signals with every ranging cycle:
+
+    \begin{itemize}[leftmargin=0.35in]
+        \item \textbf{Signal Rate (kcps):} The strength of the reflected laser return, measured in kilo-counts per second. This metric serves as a proxy for target reflectivity and distance-dependent signal attenuation. Low signal rates indicate dark or distant targets where measurement noise is higher.
+        \item \textbf{Ambient Rate (kcps):} The background infrared noise level detected by the SPAD array. This captures ambient lighting conditions---sunlight or strong room lighting degrades the signal-to-background ratio.
+    \end{itemize}
+
+    Our hypothesis is that these telemetry signals contain sufficient information about the physical state of the photon return to enable an ML model to predict \textit{why} the sensor is making a specific error and \textit{how much} to correct it.
+
+
+    \subsection{Ground Truth Methodology}
+
+    Since a reference-grade commercial LiDAR was not available, ground truth distances were derived geometrically using ray-plane intersection:
+
+    \begin{enumerate}[leftmargin=0.35in]
+        \item The sensor's pan-tilt rotation center is defined as the global origin $(0, 0, 0)$.
+        \item A custom-printed protractor grid is placed on the floor directly beneath the sensor, establishing angular reference lines every 5\textdegree~from 0\textdegree~to 180\textdegree.
+        \item Target surfaces (walls, objects) are measured with a tape measure and laser distance meter ($\pm$1\,mm accuracy) at each 5\textdegree~pan interval.
+        \item For intermediate pan angles, ground truth distances are linearly interpolated.
+        \item For non-horizontal tilt angles, a tilt correction is applied based on the following geometric derivation.
+    \end{enumerate}
+
+    \textbf{Derivation of the tilt correction.} Consider the sensor at the origin emitting a beam toward a vertical wall at horizontal distance $d_h$. When the beam is horizontal ($\theta_{\text{tilt}} = 90^\circ$), it travels exactly $d_h$ to reach the wall. When the beam is tilted by an elevation angle $\alpha = |\theta_{\text{tilt}} - 90^\circ|$ from the horizontal plane, the beam must travel a longer slant path to intersect the same vertical wall plane. By basic trigonometry, the horizontal component of the slant distance $d$ equals $d \cos(\alpha) = d_h$, which gives:
+
+    \begin{equation}
+        d_{\text{GT}}(\theta_{\text{tilt}}) = \frac{d_{\text{GT, horizontal}}}{\cos(|\theta_{\text{tilt}} - 90^\circ|)}
+        \label{eq:tilt_correction}
+    \end{equation}
+
+    This relation holds under the assumption that the target surface is a vertical plane perpendicular to the horizontal scan direction, which is valid for walls in typical indoor environments \cite{jimenez20143d, kim2015design}.
+
+    Figure~\ref{fig:ground_truth} shows the ground truth measurement setup.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{figures/ground_truth_setup.jpeg}
+    \caption{Ground truth measurement setup: physical measurement of wall distances using a protractor grid, tape measure, and laser distance meter.}
+    \label{fig:ground_truth}
+    \end{figure}
+
+
+    \subsection{Data Collection Strategy}
+
+    The initial feasibility study consisted of two indoor data-collection campaigns to enable cross-environment analysis. For the full thesis study, data collection will be expanded to additional indoor and outdoor environments:
+
+    \textbf{Campaign 1 (Controlled Environment):} 10 scanning sessions in a dark, controlled room with uniform painted walls. Pan range: 0\textdegree--180\textdegree~at 1\textdegree~steps; Tilt range: 90\textdegree--180\textdegree. Total: 57,352 raw measurements, approximately 51,000 trainable.
+
+    \textbf{Campaign 2 (Diverse Environment):} 10 scanning sessions under deliberately varied conditions to stress-test the sensor, as shown in Table~\ref{tab:day2_conditions}. The pan and tilt ranges were identical to those used in Campaign 1.
+
+    \begin{table}[H]
+    \centering
+    \caption{Day 2 scanning conditions designed to stress-test the sensor.}
+    \label{tab:day2_conditions}
+    \small
+    \begin{tabularx}{\textwidth}{|c|p{1.2in}|p{0.8in}|X|}
+    \hline
+    \textbf{Scan} & \textbf{Condition} & \textbf{Lighting} & \textbf{Purpose} \\
+    \hline
+    1 & Dimmed lights & 50\% & Low-light performance \\
+    \hline
+    2 & Clean walls & Full bright & Bright baseline \\
+    \hline
+    3 & GT verification & Full bright & Cross-check measurements \\
+    \hline
+    4 & Mid-scan change & Mixed & Lighting transition handling \\
+    \hline
+    5 & Cardboard box & Full dark & Dark + obstacle detection \\
+    \hline
+    6 & Box + dark fabric & Full dark & Worst-case conditions \\
+    \hline
+    7 & Box + dark wall & Full bright & Challenging surfaces \\
+    \hline
+    8 & Box + covered wall & Full bright & Surface variation \\
+    \hline
+    9 & Dark wall only & Full bright & Low-reflectivity wall \\
+    \hline
+    10 & Transparent object & Full bright & Translucent material test \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+
+    \subsection{ML Problem Formulation}
+
+    We formulate the calibration task as \textbf{residual error prediction}, following the residual error analysis framework established by He et al. \cite{he2017depth}. Given a raw sensor measurement $r_{\text{raw}}$ and the true distance $r_{\text{GT}}$, the residual error is defined as:
+
+    \begin{equation}
+        e = r_{\text{GT}} - r_{\text{raw}}
+        \label{eq:residual}
+    \end{equation}
+
+    A positive $e$ indicates the sensor underestimates (reads short), while a negative $e$ indicates overestimation (reads long). The ML model $f(\mathbf{x})$ will learn to predict this residual from a 6-dimensional feature vector:
+
+    \begin{equation}
+        \hat{e} = f(\mathbf{x}), \quad \mathbf{x} = [r_{\text{raw}},\; \theta_{\text{pan}},\; \theta_{\text{tilt}},\; S_{\text{signal}},\; S_{\text{ambient}},\; T]
+        \label{eq:feature_vector}
+    \end{equation}
+
+    where $S_{\text{signal}}$ is the signal rate (kcps), $S_{\text{ambient}}$ is the ambient noise rate (kcps), and $T$ is the ambient temperature (\textdegree C). The corrected distance follows directly from Eq.~\ref{eq:residual} by substituting the predicted residual $\hat{e}$ for the true residual $e$:
+
+    \begin{equation}
+        r_{\text{corrected}} = r_{\text{raw}} + \hat{e}
+        \label{eq:correction}
+    \end{equation}
+
+    \textbf{Design Decision:} We propose predicting the \textit{residual error} rather than the absolute distance. Our pilot studies showed that directly predicting distance caused the model to learn the identity function ($\hat{r} \approx r_{\text{raw}}$), ignoring all signal features. This observation is consistent with findings by He et al. \cite{he2017depth}, who showed that residual formulations are more effective for ToF error correction.
+
+    Figure~\ref{fig:ml_pipeline} illustrates the complete ML training and inference pipeline.
+
+    \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.25cm,
+        block/.style={rectangle, draw=darkblue, fill=blue!8, text width=1.6cm, minimum height=1.0cm, align=center, rounded corners=3pt, font=\scriptsize, line width=0.7pt},
+        datablock/.style={rectangle, draw=successgreen!80, fill=green!8, text width=1.6cm, minimum height=1.0cm, align=center, rounded corners=3pt, font=\scriptsize, line width=0.7pt},
+        resultblock/.style={rectangle, draw=orange!80, fill=orange!8, text width=1.6cm, minimum height=1.0cm, align=center, rounded corners=3pt, font=\scriptsize, line width=0.7pt},
+        arrow/.style={-{Stealth[length=2.5mm]}, line width=0.8pt, darkblue}
+    ]
+
+    % Training Pipeline
+    \node[datablock] (raw) {Raw Sensor\\Data};
+    \node[block, right=0.25cm of raw] (feat) {Feature\\Extraction\\(6-dim)};
+    \node[block, right=0.25cm of feat] (split) {Scan-Level\\Validation\\Split};
+    \node[block, right=0.25cm of split] (train) {Model\\Training\\(5 models)};
+    \node[resultblock, right=0.25cm of train] (eval) {Evaluation\\(MAE, R$^2$,\\95th pct)};
+    \node[block, right=0.25cm of eval] (select) {Best Model\\Selection};
+    \node[resultblock, right=0.25cm of select] (transpile) {m2cgen\\Transpile\\to C};
+
+    % Arrows
+    \draw[arrow] (raw) -- (feat);
+    \draw[arrow] (feat) -- (split);
+    \draw[arrow] (split) -- (train);
+    \draw[arrow] (train) -- (eval);
+    \draw[arrow] (eval) -- (select);
+    \draw[arrow] (select) -- (transpile);
+
+    % Labels
+    \node[above=0.15cm of raw, font=\scriptsize\bfseries, text=successgreen!80] {INPUT};
+    \node[above=0.15cm of transpile, font=\scriptsize\bfseries, text=orange!80] {OUTPUT};
+
+    \end{tikzpicture}
+    \caption{ML training pipeline: from raw sensor data to transpiled C code for ESP32 deployment.}
+    \label{fig:ml_pipeline}
+    \end{figure}
+
+
+    \subsection{ML Models Evaluated}
+
+    Five ML algorithms will be trained and compared across four training scenarios:
+
+    \begin{table}[H]
+    \centering
+    \caption{ML models and their hyperparameters.}
+    \label{tab:models}
+    \begin{tabularx}{\textwidth}{|p{1.5in}|X|p{1.4in}|}
+    \hline
+    \textbf{Model} & \textbf{Description} & \textbf{Configuration} \\
+    \hline
+    Linear Regression & Baseline linear model & Default \\
+    \hline
+    Random Forest & Ensemble of decision trees with bagging & 100 trees, depth 12 \\
+    \hline
+    XGBoost & Gradient-boosted trees (SOTA for tabular data) & 200 trees, depth 8 \\
+    \hline
+    Gradient Boosting & Sklearn gradient boosting & 150 trees, depth 6 \\
+    \hline
+    MLP Neural Network & Multi-layer perceptron & 2 layers: 128, 64 \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+    Four training scenarios will be evaluated to study generalization:
+    \begin{enumerate}[leftmargin=0.35in]
+        \item \textbf{Day 2 Only} (80/20 split) --- Accuracy within the diverse environment
+        \item \textbf{Train Day 1, Test Day 2} --- Forward transfer across environments
+        \item \textbf{Train Day 2, Test Day 1} --- Reverse transfer
+        \item \textbf{Combined Day 1+2} (80/20 split) --- Pooled multi-environment training
+    \end{enumerate}
+
+
+    \subsection{Model Transpilation for ESP32 Deployment}
+
+    For edge deployment, we will use the \texttt{m2cgen} (Model to C Code Generator) library to convert the selected sklearn model into a pure C function consisting entirely of nested if/else statements. The generated function signature will be:
+
+    \begin{verbatim}
+        double score(double * input);
+    \end{verbatim}
+
+    where \texttt{input} is a 6-element array containing the feature vector. This approach has \textbf{zero external dependencies}---no TensorFlow Lite, no ONNX runtime, no math libraries. The entire inference is a single C function that executes in under 100\,$\mu$s on the ESP32.
+
+    Figure~\ref{fig:edge_deployment} illustrates the on-device inference cycle.
+
+    \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.25cm,
+        pstep/.style={rectangle, draw=darkblue, fill=blue!8, text width=1.7cm, minimum height=0.9cm, align=center, rounded corners=3pt, font=\scriptsize, line width=0.7pt},
+        hw/.style={rectangle, draw=successgreen!80, fill=green!8, text width=1.7cm, minimum height=0.9cm, align=center, rounded corners=3pt, font=\scriptsize, line width=0.7pt},
+        ml/.style={rectangle, draw=warningred!80, fill=red!8, text width=1.7cm, minimum height=0.9cm, align=center, rounded corners=3pt, font=\scriptsize\bfseries, line width=0.7pt},
+        pout/.style={rectangle, draw=purple!80, fill=purple!8, text width=1.7cm, minimum height=0.9cm, align=center, rounded corners=3pt, font=\scriptsize, line width=0.7pt},
+        arrow/.style={-{Stealth[length=2.5mm]}, line width=0.8pt, darkblue}
+    ]
+
+    \node[hw] (move) {Move Motors\\to $(pan, tilt)$};
+    \node[hw, right=0.25cm of move] (settle) {Wait for\\Settle\\(120 ms)};
+    \node[hw, right=0.25cm of settle] (read) {Read VL53L1X\\$r, S_s, S_a$};
+    \node[pstep, right=0.25cm of read] (pack) {Pack 6-dim\\Feature\\Vector};
+    \node[ml, right=0.25cm of pack] (infer) {ML Inference\\score()\\$< 100\,\mu$s};
+    \node[pstep, right=0.25cm of infer] (correct) {$r_{\text{corr}}$\\$= r + \hat{e}$};
+    \node[pout, right=0.25cm of correct] (xyz) {Compute\\$(x,y,z)$\\Output CSV};
+
+    \draw[arrow] (move) -- (settle);
+    \draw[arrow] (settle) -- (read);
+    \draw[arrow] (read) -- (pack);
+    \draw[arrow] (pack) -- (infer);
+    \draw[arrow] (infer) -- (correct);
+    \draw[arrow] (correct) -- (xyz);
+
+    % Loop arrow
+    \draw[arrow, dashed] (xyz.south) -- ++(0,-0.6) -| (move.south);
+
+    \end{tikzpicture}
+    \caption{On-device inference cycle on the ESP32: each scan point goes through ML correction in real time.}
+    \label{fig:edge_deployment}
+    \end{figure}
+
+
+    \subsection{Spherical-to-Cartesian Transform}
+
+    Each calibrated measurement will be converted to 3D Cartesian coordinates for point cloud reconstruction using the standard spherical-to-Cartesian coordinate transform \cite{hansard2012time, jimenez20143d}. In our coordinate convention, $\theta_{\text{pan}}$ is the azimuthal angle measured in the horizontal plane, and the elevation angle is $\phi = \theta_{\text{tilt}} - 90^\circ$ (measured from the horizontal). The standard spherical transform $(r, \theta, \phi) \rightarrow (x, y, z)$ gives:
+
+    \begin{equation}
+        \begin{bmatrix} x \\ y \\ z \end{bmatrix} =
+        \begin{bmatrix}
+            r_{\text{corr}} \cdot \cos(\theta_{\text{tilt}} - 90^\circ) \cdot \cos(\theta_{\text{pan}}) \\
+            r_{\text{corr}} \cdot \cos(\theta_{\text{tilt}} - 90^\circ) \cdot \sin(\theta_{\text{pan}}) \\
+            r_{\text{corr}} \cdot \sin(\theta_{\text{tilt}} - 90^\circ)
+        \end{bmatrix}
+        \label{eq:spherical}
+    \end{equation}
+
+    where $r_{\text{corr}}$ is the ML-calibrated range from Eq.~\ref{eq:correction}. This transform is applied identically on the ESP32 during real-time scanning and in the post-processing Python pipeline.
+
+
+    % =========================================================
+    % SECTION 6: METHOD JUSTIFICATION
+    % =========================================================
+
+    \section{Method Justification}
+
+    The proposed methodology is justified on several grounds:
+
+    \textbf{1. Residual Prediction over Absolute Prediction:} Training the model to predict the residual error $e = r_{\text{GT}} - r_{\text{raw}}$ rather than the absolute distance prevents the model from learning the identity function. When trained to predict distance directly, the model simply echoes the raw distance and ignores signal features entirely. Residual formulation forces the model to learn the \textit{error structure}, which is where signal telemetry is most informative.
+
+    \textbf{2. Tree-Based Models over Neural Networks:} Decision Trees and Random Forests transpile to pure C if/else statements with zero external dependencies. Neural networks would require TFLite Micro or custom fixed-point inference libraries, adding complexity and potential failure modes. Tree models achieve comparable accuracy (23.42 vs 22.41\,mm MAE) while being dramatically simpler to deploy.
+
+    \textbf{3. Signal-Aware Features:} The inclusion of signal rate, ambient rate, and temperature as features is justified by the physics of ToF measurement. Signal rate captures target reflectivity and MPI effects; ambient rate captures lighting conditions; temperature captures thermal drift. Pilot feature-ablation results indicate a 23\% increase in MAE when telemetry features are removed; this result will be re-evaluated using the corrected dataset.
+
+    \textbf{4. Multi-Environment Training:} Single-environment models overfit to the specific error patterns of one room and fail catastrophically in new environments. Pooled training forces the model to learn environment-invariant corrections, achieving generalization across different lighting, materials, and scene geometries.
+
+    \textbf{5. m2cgen Transpilation:} Unlike TFLite which requires quantization, model conversion, and a runtime interpreter, m2cgen produces a standalone C function that any C compiler can handle. This eliminates dependency management and reduces the risk of deployment failures on embedded platforms.
+
+    \subsection{Component Selection Justification}
+
+    Table~\ref{tab:component_justification} compares each selected component against realistic alternatives, justifying our design choices.
+
+    \begin{table}[H]
+    \centering
+    \caption{Component selection justification against alternatives.}
+    \label{tab:component_justification}
+    \small
+    \begin{tabularx}{\textwidth}{|p{0.8in}|p{1.0in}|p{1.0in}|X|}
+    \hline
+    \textbf{Category} & \textbf{Selected} & \textbf{Alternative} & \textbf{Justification} \\
+    \hline
+    ToF Sensor & VL53L1X & HC-SR04 (Ultrasonic) & VL53L1X provides diagnostic telemetry such as signal rate, ambient rate, and sigma; signal and ambient rates are used as calibration features in the current study. \\
+    \hline
+    MCU & ESP32 & Arduino Uno & ESP32 has 4\,MB flash (fits transpiled model), dual-core 240\,MHz, and native I2C/PWM; Arduino Uno has only 32\,KB flash \\
+    \hline
+    Pan/Tilt Motors & DC Gear \& N20 & NEMA 17 (stepper) & DC Gear/N20 motors provide sufficient torque for under \$3; stepper motors require larger driver boards and add \$15+ to the BOM \\
+    \hline
+    ML Framework & scikit-learn + m2cgen & TensorFlow Lite & Tree transpilation produces zero-dependency C code; TFLite requires a runtime interpreter and quantization pipeline \\
+    \hline
+    Temp. Sensor & DHT11 & BME280 & DHT11 costs \$1 and is sufficient to flag thermal drift; BME280 is more precise but costs \$5+ \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+
+    % =========================================================
+    % SECTION 7: EXPECTED OUTCOMES
+    % =========================================================
+
+    \section{Expected Outcomes}
+
+    Based on our preliminary experiments and completed data collection campaigns, the following outcomes are expected:
+
+    \begin{enumerate}[leftmargin=0.35in]
+        \item \textbf{Functional Hardware Platform:} A fully operational, optimal low-cost 3D LiDAR scanner (<\$25) derived from testing multiple hardware combinations, capable of performing automated pan-tilt scans and producing structured CSV data with distance, angle, and telemetry fields.
+
+        \item \textbf{Comprehensive Multi-Environment Dataset:} A massive dataset of over 150,000 raw measurements across numerous indoor and outdoor environments under diverse conditions, with paired ground truth distances. This dataset will be made publicly available for reproducibility.
+
+        \item \textbf{Signal-Aware Calibration Evaluation:} Quantify the contribution of telemetry features by comparing geometry-only and signal-aware models using the corrected dataset.
+
+        \item \textbf{Cross-Environment Generalization Analysis:} Pilot experiments indicate that pooled multi-environment training can achieve approximately 22\,mm MAE under the current experimental protocol. Final performance will be re-evaluated using scan-level validation and an unseen third environment.
+
+        \item \textbf{ESP32 Edge Deployment:} A selected calibration model meeting the target latency and memory constraints will be deployed on the ESP32 for real-time inference. The current depth-12 Decision Tree is a preliminary candidate based on pilot experiments.
+
+        \item \textbf{3D Point Cloud Reconstruction:} Visual and quantitative evaluation of point-cloud quality---e.g., using plane-fitting RMSE for wall surfaces---after ML calibration.
+
+        \item \textbf{Research Publication:} An IEEE-format research paper titled ``Multi-Environment TinyML Calibration of a Low-Cost Pan-Tilt Time-of-Flight LiDAR for Indoor 3D Reconstruction,'' suitable for submission to IEEE Sensors Conference or a Q3/Q4 journal.
+    \end{enumerate}
+
+
+    % =========================================================
+    % FEASIBILITY STUDY / PILOT EXPERIMENTS
+    % =========================================================
+
+    \section{Preliminary Results and Progress to Date}
+
+    To validate the feasibility of the proposed approach, extensive preliminary experiments have already been conducted. This section presents key findings that demonstrate the viability of our proposed ML calibration pipeline.
+
+    \subsection{Day 1: Controlled Environment Results}
+
+    In the controlled indoor environment, the raw sensor achieved an average error of 18.37\,mm. ML models provided modest but consistent improvements, as shown in Table~\ref{tab:day1_results}.
+
+    \begin{table}[H]
+    \centering
+    \caption{Day 1 (Controlled Environment) model performance.}
+    \label{tab:day1_results}
+    \begin{tabularx}{\textwidth}{|X|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{MAE (mm)} & \textbf{95th Pct (mm)} & \textbf{R$^2$} \\
+    \hline
+    Raw Sensor (No ML) & 18.37 & 53.37 & $-$0.0001 \\
+    \hline
+    Linear Regression & 18.01 & 51.30 & 0.0594 \\
+    \hline
+    Random Forest & 17.35 & 49.08 & 0.1257 \\
+    \hline
+    \textbf{XGBoost} & \textbf{16.99} & \textbf{48.80} & \textbf{0.1573} \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+    The modest improvement is expected: the sensor was already performing near its ceiling under ideal conditions (dark room, uniform walls), leaving limited room for ML correction.
+
+    \subsection{Day 2: Diverse Environment Results}
+
+    In the diverse environment with varied lighting, obstacles, and challenging surfaces, the raw sensor's average error was a staggering 934.97\,mm (nearly 1 meter off). Here, ML calibration produced dramatic improvements:
+
+    \begin{table}[H]
+    \centering
+    \caption{Day 2 (Diverse Environment) model performance.}
+    \label{tab:day2_results}
+    \begin{tabularx}{\textwidth}{|X|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{MAE (mm)} & \textbf{95th Pct (mm)} & \textbf{R$^2$} \\
+    \hline
+    Raw Sensor (No ML) & 934.97 & 2617.87 & $-$0.0085 \\
+    \hline
+    Linear Regression & 367.94 & 1040.66 & 0.8251 \\
+    \hline
+    Random Forest & 65.22 & 376.96 & 0.9757 \\
+    \hline
+    \textbf{XGBoost} & \textbf{49.34} & \textbf{203.70} & \textbf{0.9854} \\
+    \hline
+    Gradient Boosting & 77.01 & 425.26 & 0.9753 \\
+    \hline
+    MLP Neural Net & 166.40 & 750.32 & 0.9419 \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+    In the pilot dataset, XGBoost reduced the reported MAE by 94.7\%; however, this result is affected by the current ground-truth formulation and will be re-evaluated using object-aware ground truth.
+
+    \subsection{Cross-Environment Transfer: Catastrophic Failure}
+
+    \textit{This is the most important finding of this thesis.} When training a model in one environment and testing it in the other, \textbf{the model performed worse than the raw sensor}:
+
+    \begin{table}[H]
+    \centering
+    \caption{Cross-environment transfer results (XGBoost).}
+    \label{tab:transfer}
+    \begin{tabularx}{\textwidth}{|X|X|c|c|}
+    \hline
+    \textbf{Train On} & \textbf{Test On} & \textbf{Raw MAE (mm)} & \textbf{XGBoost MAE (mm)} \\
+    \hline
+    Day 1 & Day 2 & 934.97 & \textcolor{warningred}{\textbf{947.15}} \\
+    \hline
+    Day 2 & Day 1 & 18.24 & \textcolor{warningred}{\textbf{1049.09}} \\
+    \hline
+    \rowcolor{green!10}
+    \textbf{Combined} & \textbf{Combined} & \textbf{149.84} & \textcolor{successgreen}{\textbf{22.41}} \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+    Pooled multi-environment training achieved \textbf{85.0\% MAE reduction} from the raw sensor, significantly mitigating the cross-environment transfer problem.
+
+    \subsection{Feature Ablation: Signal Features Matter}
+
+    To validate the ``Signal-Aware'' hypothesis, we compared XGBoost with and without telemetry features:
+
+    \begin{itemize}[leftmargin=0.35in]
+        \item All 6 features: \textbf{22.41 mm} MAE
+        \item Geometry only (distance + pan + tilt): \textbf{27.58 mm} MAE
+        \item \textbf{Removing signal features increased error by 23\%}
+    \end{itemize}
+
+    Figure~\ref{fig:feature_importance} shows the XGBoost feature importance ranking.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{figures/feature_importance.png}
+    \caption{XGBoost feature importance for the combined (multi-environment) model. Signal rate ranks 1st in the pilot feature-importance analysis; however, this result requires re-evaluation after correcting the Campaign 1 logging issue.}
+    \label{fig:feature_importance}
+    \end{figure}
+
+    \subsection{ESP32 Deployment: Size vs. Accuracy Trade-off}
+
+    For embedded deployment, we trained Decision Trees at multiple depths to find the optimal accuracy-memory trade-off:
+
+    \begin{table}[H]
+    \centering
+    \caption{Decision Tree depth vs. accuracy and code size for ESP32 deployment.}
+    \label{tab:esp32_tradeoff}
+    \begin{tabularx}{\textwidth}{|c|c|c|c|X|}
+    \hline
+    \textbf{Depth} & \textbf{MAE (mm)} & \textbf{C Code Size} & \textbf{Latency} & \textbf{ESP32 Fit?} \\
+    \hline
+    10 & 26.52 & 160.2 KB & $<$100 $\mu$s & Yes (comfortable) \\
+    \hline
+    \rowcolor{green!10}
+    \textbf{12} & \textbf{23.42} & \textbf{453.8 KB} & \textbf{$<$100 $\mu$s} & \textbf{Yes (optimal)} \\
+    \hline
+    15 & 21.92 & 1,212.7 KB & $<$100 $\mu$s & Yes (tight) \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+    Depth 12 was selected as the optimal trade-off, sacrificing only $\sim$1\,mm of accuracy compared to XGBoost while producing code that comfortably fits the ESP32's flash memory.
+
+    \subsection{3D Point Cloud Reconstruction}
+
+    Figure~\ref{fig:point_clouds} shows representative 3D point cloud reconstructions from the Day 1 controlled environment. After calibration, wall surfaces appear flatter, object boundaries are sharper, and stray points are reduced.
+
+    \begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/point_cloud_1.png}
+        \caption{Day 1 point cloud (View 1)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/point_cloud_2.png}
+        \caption{Day 1 point cloud (View 2)}
+    \end{subfigure}
+    \caption{Preliminary Day 1 point-cloud reconstruction from the pilot hardware and calibration pipeline.}
+    \label{fig:point_clouds}
+    \end{figure}
+
+    Figure~\ref{fig:day2_point_clouds} shows point clouds from the Day 2 diverse environment, where varied lighting and obstacles were introduced. The scans demonstrate the sensor's behavior under challenging conditions and the effectiveness of ML calibration in producing recognizable room geometry despite adverse factors.
+
+    \begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/day2_point_cloud_scan2.png}
+        \caption{Day 2 Scan 2: Bright baseline (full lighting, clean walls)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/day2_point_cloud_scan5.png}
+        \caption{Day 2 Scan 5: Dark environment with cardboard box obstacle}
+    \end{subfigure}
+    \caption{Preliminary Day 2 point-cloud reconstructions from the pilot study under varied environmental conditions.}
+    \label{fig:day2_point_clouds}
+    \end{figure}
+
+    \subsection{Correlation Analysis}
+
+    Figure~\ref{fig:correlation} shows the feature correlation heatmap from exploratory data analysis. The moderate negative correlation between ambient rate and distance confirms that ambient rate captures distance-dependent information beyond raw distance alone.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/feature_correlation.png}
+    \caption{Feature correlation heatmap: raw distance and ground truth are strongly correlated, while ambient rate shows moderate negative correlation with distance.}
+    \label{fig:correlation}
+    \end{figure}
+
+
+    % =========================================================
+    % SECTION 8: TOOLS AND TECHNOLOGIES
+    % =========================================================
+
+    \section{Tools and Technologies to Be Used}
+
+    \begin{table}[H]
+    \centering
+    \caption{Tools, technologies, and resources used in this project.}
+    \label{tab:tools}
+    \begin{tabularx}{\textwidth}{|p{1.2in}|X|}
+    \hline
+    \textbf{Category} & \textbf{Tools / Technologies} \\
+    \hline
+    \textbf{Hardware} & VL53L1X ToF sensor, ESP32 DevKit V1, pan-tilt motors (SG90 pilot, proposed DC/N20), DHT11, INA219, MPU6050 \\
+    \hline
+    \textbf{Firmware} & Arduino IDE, PlatformIO, C/C++, ESP32 Arduino Core \\
+    \hline
+    \textbf{ML \& Data Science} & Python 3.x, scikit-learn \cite{pedregosa2011scikit}, XGBoost \cite{chen2016xgboost}, NumPy, Pandas, Matplotlib, Seaborn \\
+    \hline
+    \textbf{Model Export} & m2cgen (Model to C Code Generator) \\
+    \hline
+    \textbf{Visualization} & Matplotlib (3D scatter plots), custom WebGL point cloud viewer (HTML/JavaScript) \\
+    \hline
+    \textbf{Version Control} & Git, GitHub \\
+    \hline
+    \textbf{Documentation} & \LaTeX{} (Overleaf), IEEE conference template \\
+    \hline
+    \textbf{Serial Interface} & Python Tkinter (custom Scanner UI for data collection) \\
+    \hline
+    \textbf{Operating Systems} & Windows 10/11 (development), ESP32 bare-metal (deployment) \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+
+    % =========================================================
+    % SECTION 9: REFERENCES
+    % =========================================================
+
+    \section{References}
+
+    \renewcommand{\refname}{}
+    \bibliographystyle{IEEEtran}
+    \bibliography{references}
+
+
+    % =========================================================
+    % SECTION 10: WORK DIVISION
+    % =========================================================
+
+    \section{Work Division and Team Management}
+
+    Table~\ref{tab:work-division} describes the task distribution among team members. All members contribute collaboratively, with specialized focus areas.
+
+    \begin{table}[H]
+    \centering
+    \caption{Work Division and Team Management}
+    \label{tab:work-division}
+    \begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{1.6in}|X|>{\raggedright\arraybackslash}p{1.3in}|}
+    \hline
+    \textbf{Team Member} &
+    \textbf{Assigned Tasks} &
+    \textbf{Role} \\
+    \hline
+
+    Abdul Momit Talukder\newline (232311320) &
+    Hardware assembly and integration, pan-tilt actuator calibration against protractor reference angles, physical preparation of indoor scanning environments, ground truth measurement, data collection campaigns, ESP32 deployment and testing, performance evaluation, and presentation preparation &
+    Team Leader \& Hardware Engineer \\
+    \hline
+
+    Mahfuz Ahmad\newline (232311307) &
+    Firmware development (data collection \& inference), ground truth measurement, ML pipeline design and model training, tool development (protractor generator, scanner UI), data collection and scanning, m2cgen model transpilation, ESP32 deployment, and point cloud visualization &
+    Software Developer \& ML Engineer \\
+    \hline
+
+    Oishi Farzana\newline (232311294) &
+    Literature review and research gap identification, exploratory data analysis (EDA), data preprocessing, result interpretation and comparative analysis, thesis writing and documentation, reference management, paper formatting, and presentation slide preparation &
+    Researcher \& Technical Writer \\
+    \hline
+
+    \end{tabularx}
+    \end{table}
+
+
+    % =========================================================
+    % SECTION 11: TIMELINE
+    % =========================================================
+
+    \section{Timeline}
+
+    The thesis spans two semesters: the 7th semester (6 months, M1--M6) and the 8th semester (6 months, M7--M12), totaling 12 months. At the time of this proposal submission, an initial feasibility pilot has been completed (M1--M3), during which a preliminary hardware prototype and ML pipeline were tested. The remaining 9 months will focus on evaluating multiple combinations of sensors and motors, developing the final optimized platform, executing large-scale data collection across many environments, and conducting robust cross-environment generalization studies. Figure~\ref{fig:thesis_timeline} presents the complete proposed timeline.
+
+    \begin{figure}[H]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{ganttchart}[
+        hgrid,
+        vgrid,
+        x unit=1.0cm,
+        y unit title=0.7cm,
+        y unit chart=0.6cm,
+        title height=1,
+        bar height=0.5,
+        bar label font=\small,
+        title label font=\small\bfseries,
+        bar/.append style={fill=blue!25}
+    ]{1}{12}
+
+    \gantttitle{7th Semester}{6}
+    \gantttitle{8th Semester}{6} \\
+
+    \gantttitle{M1}{1}
+    \gantttitle{M2}{1}
+    \gantttitle{M3}{1}
+    \gantttitle{M4}{1}
+    \gantttitle{M5}{1}
+    \gantttitle{M6}{1}
+    \gantttitle{M7}{1}
+    \gantttitle{M8}{1}
+    \gantttitle{M9}{1}
+    \gantttitle{M10}{1}
+    \gantttitle{M11}{1}
+    \gantttitle{M12}{1} \\
+
+    % --- Completed Pilot (M1-M3) ---
+    \ganttbar[bar/.append style={fill=green!40}]{Literature Review \& Gap Analysis}{1}{2} \\
+    \ganttbar[bar/.append style={fill=green!40}]{Feasibility Pilot (Hardware)}{1}{1} \\
+    \ganttbar[bar/.append style={fill=green!40}]{Feasibility Pilot (Firmware)}{1}{2} \\
+    \ganttbar[bar/.append style={fill=green!40}]{Pilot Data Collection (Env A \& B)}{2}{3} \\
+    \ganttbar[bar/.append style={fill=green!40}]{Pilot ML Training \& Transpilation}{2}{3} \\
+    % --- Remaining 7th Semester (M4-M6) ---
+    \ganttbar{Hardware Combinations Assembly \& Testing}{4}{4} \\
+    \ganttbar{Large-Scale Data Collection (Indoor/Outdoor)}{4}{5} \\
+    \ganttbar{Final Model Training \& Feature Ablation}{5}{5} \\
+    \ganttbar{3D Point Cloud Visualization}{5}{6} \\
+    \ganttbar{Proposal Presentation}{6}{6} \\
+    % --- 8th Semester (M7-M12) ---
+    \ganttbar{3rd Environment Data Collection}{7}{8} \\
+    \ganttbar{Outdoor / Adversarial Testing}{8}{9} \\
+    \ganttbar{Model Generalization Study}{9}{10} \\
+    \ganttbar{Research Paper Finalization}{9}{11} \\
+    \ganttbar{Thesis Document Writing}{8}{11} \\
+    \ganttbar{Final Review \& Revision}{11}{12} \\
+    \ganttbar{Thesis Defense}{12}{12}
+
+    \end{ganttchart}%
+    }
+    \caption{Proposed 12-month thesis timeline across 7th and 8th semesters. Green bars (M1--M3) indicate completed work; blue bars (M4--M12) indicate planned work.}
+    \label{fig:thesis_timeline}
+    \end{figure}
+
+
+    % =========================================================
+    % SECTION 12: COST-BENEFIT ANALYSIS
+    % =========================================================
+
+    \section{Cost-Benefit Analysis}
+
+    \begin{table}[H]
+    \centering
+    \caption{Cost-Benefit Analysis for the Proposed System.}
+    \label{tab:cost_benefit}
+    \begin{tabularx}{\textwidth}{|p{1.5in}|X|p{1.0in}|}
+    \hline
+    \textbf{Item} & \textbf{Description} & \textbf{Cost} \\
+    \hline
+    VL53L1X ToF Sensor & Primary sensing element (I2C) & \$6 \\
+    \hline
+    ESP32 DevKit V1 & Microcontroller for control and ML inference & \$4 \\
+    \hline
+    DC Gear \& N20 Motors & Pan and tilt actuation & \$2.4 \\
+    \hline
+    TB6612FNG & Motor Driver & \$2 \\
+    \hline
+    MPU6050, DHT11, INA219 & Axis, environmental, and power monitoring & \$5 \\
+    \hline
+    Power supply \& housing & Power delivery and mounting & \$2 \\
+    \hline
+    \textbf{Hardware Total} & & \textbf{<\$22} \\
+    \hline
+    \hline
+    Software Tools & Python, scikit-learn, Arduino IDE, Git & Free (OSS) \\
+    \hline
+    Overleaf & LaTeX document preparation & Free tier \\
+    \hline
+    \textbf{Software Total} & & \textbf{\$0} \\
+    \hline
+    \hline
+    \multicolumn{2}{|r|}{\textbf{Grand Total}} & \textbf{<\$22} \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+    \textbf{Benefit Analysis:} Commercial LiDAR systems with comparable 3D mapping capabilities cost \$500--\$10,000+. Our system achieves functional 3D point cloud generation with ML-calibrated accuracy of $\sim$23\,mm MAE at a cost reduction of over \textbf{97\%}. Table~\ref{tab:economic_comparison} presents a direct economic comparison.
+
+    \begin{table}[H]
+    \centering
+    \caption{Economic comparison with commercial LiDAR systems.}
+    \label{tab:economic_comparison}
+    \small
+    \begin{tabularx}{\textwidth}{|X|c|c|c|}
+    \hline
+    \textbf{System} & \textbf{Approx. Cost} & \textbf{Typical Accuracy} & \textbf{On-Device ML} \\
+    \hline
+    Velodyne VLP-16 & \$4,000+ & $\pm$3 cm & No \\
+    \hline
+    Hokuyo URG-04LX & \$1,000+ & $\pm$3 cm (2D only) & No \\
+    \hline
+    RPLIDAR A1 & \$100+ & $\pm$5 cm (2D only) & No \\
+    \hline
+    Intel RealSense L515 & \$350+ & $\pm$5 mm (short range) & No \\
+    \hline
+    \textbf{This Work (VL53L1X + ESP32)} & \textbf{<\$22} & \textbf{$\sim$22 mm MAE} & \textbf{Yes} \\
+    \hline
+    \end{tabularx}
+    \end{table}
+
+    The open-source nature of all software tools ensures zero recurring costs. The system is particularly valuable for:
+    \begin{itemize}[leftmargin=0.35in]
+        \item Educational institutions in developing countries with limited equipment budgets
+        \item Hobbyist robotics projects requiring basic spatial awareness
+        \item Research prototyping where cost-effective validation of concepts is needed before investing in commercial hardware
+    \end{itemize}
+
+
+    % =========================================================
+    % SECTION 13: CONSTRAINTS AND LIMITATIONS
+    % =========================================================
+
+    \section{Constraints and Limitations}
+
+    \begin{enumerate}[leftmargin=0.35in]
+        \item \textbf{Environmental Constraint:} Only two indoor environments have been tested. The model's performance on a completely unseen third environment remains an open question and represents the most important limitation of this work.
+
+        \item \textbf{Data Quality Constraint:} A firmware logging bug in Campaign 1 recorded constant signal rate values (15.0 kcps) for all measurements. Because of this, the ML model may be using signal rate as a proxy to identify which campaign a point came from rather than learning physical relationships. This likely inflates both the 23\% ablation result and the feature importance ranking. The sigma metric was also unavailable in Campaign 2 (always returned $-1$) and was consequently excluded from the feature vector.
+
+        \item \textbf{Ground Truth Accuracy:} The geometric ground truth methodology relies on manual measurements of wall distance with a tape measure. However, scans with a box or transparent object correctly read the object's surface, which gets scored as a huge error against the wall ground truth. This artifact inflates the Day 2 raw MAE (935\,mm) and risks teaching the model to "erase" valid obstacles. This will be addressed in Part II with object-aware ground truth modeling.
+
+        \item \textbf{Generalization vs. Memorization:} The current 80/20 train-test split operates randomly across all measurements. Since pan angle correlates strongly ($-0.80$) with residual error, the model can simply memorize each room's geometry. Therefore, the reported 22\,mm MAE represents an in-distribution result, and the cross-environment failure is indicative of this memorization. True spatial generalization remains an open question that we will evaluate in Semester 8 using leave-one-scan-out cross-validation and a third unseen environment.
+    \end{enumerate}
+
+
+    % =========================================================
+    % SECTION 14: SOCIETAL IMPACT
+    % =========================================================
+
+    \section{Societal Impact}
+
+    This thesis contributes to society in several meaningful ways:
+
+    \textbf{Democratizing 3D Sensing Technology:} By reducing the core hardware cost to below \$22, this work makes spatial sensing technology accessible to students, educators, and researchers in developing countries who cannot afford commercial systems. This directly supports digital inclusion and STEM education.
+
+    \textbf{Advancing Edge AI for IoT:} The demonstration of on-device ML inference on a low-cost ESP32 microcontroller establishes a practical template for deploying intelligent sensor processing in resource-constrained IoT devices. This has applications in smart agriculture, environmental monitoring, and low-cost infrastructure inspection.
+
+    \textbf{Open-Source Contribution:} All firmware, ML pipeline code, and the research paper will be made publicly available via GitHub (\url{https://github.com/Mr-Mahfuz/signal-aware-tof-calibration}), enabling other researchers to reproduce, extend, and build upon this work.
+
+    \textbf{Assistive Technology Potential:} Low-cost 3D spatial awareness could enable assistive navigation devices for visually impaired individuals, obstacle detection for small autonomous vehicles, and affordable structural monitoring for buildings in earthquake-prone regions.
+
+    \textbf{Educational Value:} The end-to-end nature of this project---spanning hardware design, firmware programming, data science, ML model training, embedded deployment, and scientific writing---provides a comprehensive learning experience that develops multiple engineering competencies simultaneously.
+
+
+    % =========================================================
+    % SECTION 15: COMPLEX ENGINEERING PROBLEM MAPPING
+    % =========================================================
+
+    \section{Complex Engineering Problem Mapping}
+
+    Table~\ref{tab:complex-problem} maps the thesis to the complex engineering problem attributes defined by the accreditation framework.
+
+    \begin{table}[H]
+    \centering
+    \caption{Mapping with complex problem solving.}
+    \label{tab:complex-problem}
+
+    \small
+    \renewcommand{\arraystretch}{1.3}
+
+    \begin{tabularx}{\textwidth}{|
+    >{\centering\arraybackslash}X|
+    >{\centering\arraybackslash}X|
+    >{\centering\arraybackslash}X|
+    >{\centering\arraybackslash}X|
+    >{\centering\arraybackslash}X|
+    >{\centering\arraybackslash}X|
+    >{\centering\arraybackslash}X|}
+    \hline
+
+    \textbf{WP1} &
+    \textbf{WP2} &
+    \textbf{WP3} &
+    \textbf{WP4} &
+    \textbf{WP5} &
+    \textbf{WP6} &
+    \textbf{WP7} \\
+    \hline
+
+    Depth of Knowledge &
+    Range of Conflicting Requirements &
+    Depth of Analysis &
+    Familiarity of Issues &
+    Extent of Applicable Codes &
+    Extent of Stakeholder Involvement &
+    Interdependence \\
+    \hline
+
+    {\Large\checkmark} &
+    {\Large\checkmark} &
+    {\Large\checkmark} &
+    {\Large\checkmark} &
+    {\Large\checkmark} &
+    &
+    {\Large\checkmark} \\
+    \hline
+
+    \end{tabularx}
+    \end{table}
+
+    \textbf{Justification:}
+    \begin{itemize}[leftmargin=0.35in]
+        \item \textbf{WP1 (Depth of Knowledge):} Requires deep understanding of ToF physics, ML algorithms, embedded systems, and signal processing---spanning multiple engineering disciplines.
+        \item \textbf{WP2 (Conflicting Requirements):} The tension between model accuracy and memory footprint (XGBoost: 22.41\,mm / 40\,MB vs. DT-12: 23.42\,mm / 454\,KB) exemplifies conflicting design requirements.
+        \item \textbf{WP3 (Depth of Analysis):} Involves statistical analysis (MAE, R$^2$, 95th percentile), cross-environment transfer studies, feature ablation, and model size sweeps.
+        \item \textbf{WP4 (Familiarity of Issues):} Combining TinyML with ToF sensor calibration is an emerging, unfamiliar problem domain without established solutions.
+        \item \textbf{WP5 (Applicable Codes):} IEEE standards for sensor evaluation, ML best practices (train-test splits, cross-validation).
+        \item \textbf{WP7 (Interdependence):} Hardware, firmware, ML pipeline, and deployment are tightly coupled---changes in one component propagate through the entire system.
+    \end{itemize}
+
+
+    % =========================================================
+    % SECTION 16: COMPLEX ENGINEERING ACTIVITY MAPPING
+    % =========================================================
+
+    \section{Complex Engineering Activity Mapping}
+
+    \begin{table}[H]
+    \centering
+    \caption{Mapping with complex engineering activities.}
+    \label{tab:complex-activity}
+
+    \small
+    \renewcommand{\arraystretch}{1.3}
+
+    \begin{tabularx}{\textwidth}{|
+    >{\centering\arraybackslash}X|
+    >{\centering\arraybackslash}X|
+    >{\centering\arraybackslash}X|
+    >{\centering\arraybackslash}X|
+    >{\centering\arraybackslash}X|}
+    \hline
+
+    \textbf{EA1} &
+    \textbf{EA2} &
+    \textbf{EA3} &
+    \textbf{EA4} &
+    \textbf{EA5} \\
+    \hline
+
+    Range of resources &
+    Level of Interaction &
+    Innovation &
+    Consequences for society and environment &
+    Familiarity \\
+    \hline
+
+    {\Large\checkmark} &
+    {\Large\checkmark} &
+    {\Large\checkmark} &
+    {\Large\checkmark} &
+    \\
+    \hline
+
+    \end{tabularx}
+    \end{table}
+
+    \textbf{Justification:}
+    \begin{itemize}[leftmargin=0.35in]
+        \item \textbf{EA1 (Range of Resources):} Utilizes diverse resources: electronic hardware, firmware programming, Python data science libraries, embedded C, LaTeX, and version control systems.
+        \item \textbf{EA2 (Level of Interaction):} The system involves complex interaction between optical sensing (photon physics), mechanical actuation (motor control), digital signal processing, and statistical learning.
+        \item \textbf{EA3 (Innovation):} The combination of signal-telemetry-aware ML calibration with tree-model transpilation for on-device deployment represents an innovative approach that is relatively unexplored in existing literature.
+        \item \textbf{EA4 (Consequences):} Democratizing 3D sensing technology has positive societal consequences for education, accessibility, and IoT applications.
+    \end{itemize}
+
+
+    % =========================================================
+    % SECTION 17: GREEN COMPUTING
+    % =========================================================
+
+    \section{Green Computing Considerations}
+
+    This thesis actively incorporates green computing principles:
+
+    \begin{itemize}[leftmargin=0.35in]
+        \item \textbf{Ultra-Low Power Deployment:} The ESP32 operates at approximately 240\,mW during active scanning. ML inference adds $<$0.2\% overhead to the power budget, making the system one of the most energy-efficient ML deployment targets available.
+
+        \item \textbf{Zero-Dependency Inference:} By transpiling the model to pure C code (no TFLite runtime, no ONNX interpreter), we eliminate unnecessary software bloat and reduce the computational overhead of inference.
+
+        \item \textbf{Local Processing:} All inference occurs on-device. There is no need for cloud connectivity, eliminating data transmission energy costs and cloud server power consumption.
+
+        \item \textbf{Hardware Minimalism:} The entire system uses multiple commodity components (under \$25 total). No custom PCB fabrication, no specialized manufacturing, and minimal electronic waste.
+
+        \item \textbf{Open-Source Software:} All tools used (Python, scikit-learn, Arduino) are open-source, requiring no proprietary server infrastructure or licensing energy overhead.
+
+        \item \textbf{Reusable Hardware:} All components are standard hobbyist parts that can be repurposed for other projects after the thesis is complete, minimizing e-waste.
+    \end{itemize}
+
+
+    % =========================================================
+    % SECTION 18: LIFELONG LEARNING
+    % =========================================================
+
+    \section{Lifelong Learning and Personal Development}
+
+    This thesis project contributes substantially to the team members' long-term professional development across multiple engineering domains:
+
+    \begin{itemize}[leftmargin=0.35in]
+        \item \textbf{Embedded Systems Engineering:} Hands-on experience with microcontroller programming, I2C communication, PWM motor control, and hardware debugging develops practical embedded systems skills directly applicable to IoT and robotics careers.
+
+        \item \textbf{Machine Learning Engineering:} End-to-end ML pipeline experience---from data collection and EDA through model training, evaluation, and deployment---builds foundational ML engineering competence.
+
+        \item \textbf{TinyML and Edge AI:} Working with model transpilation and resource-constrained deployment develops specialized skills in the rapidly growing TinyML field, which is projected to become a multi-billion-dollar industry.
+
+        \item \textbf{Scientific Research Methodology:} Formulating hypotheses, designing controlled experiments, performing statistical analysis, writing reproducible research papers, and honestly reporting limitations develops rigorous scientific thinking.
+
+        \item \textbf{Cross-Disciplinary Integration:} The project spans optics (ToF physics), mechanical engineering (motor systems), computer science (ML, firmware), and statistics (evaluation metrics), developing the ability to work across traditional disciplinary boundaries.
+
+        \item \textbf{Technical Communication:} Writing LaTeX documents, creating scientific figures, and presenting quantitative results develops technical writing and presentation skills essential for any engineering career.
+
+        \item \textbf{Version Control and Collaboration:} Using Git/GitHub for collaborative development builds software engineering best practices that are industry-standard.
+    \end{itemize}
+
+
+    \end{document}
