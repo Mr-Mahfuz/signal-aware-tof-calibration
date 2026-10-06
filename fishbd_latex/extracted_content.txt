@@ -1,0 +1,480 @@
+=== EXTRACTED TEXT ===
+
+                                                                                                                                FISHBD | THESIS PROPOSAL
+
+                                                                 VARENDRA UNIVERSITY
+                                        Department of Computer Science & Engineering
+
+                                              UNDERGRADUATE THESIS PROPOSAL
+
+               Development of a Taxonomically Verified Image Dataset for Bangladeshi             Fish Species
+
+Submitted by:
+
+Sahariar Ahmed Isteyak (232311289)
+
+ Most. Amrin Akter (232311246) 
+
+Lamia Hasan (232311251)
+
+Program: B.Sc. in Computer Science and Engineering
+
+ Semester: 7th 
+
+Section: D
+
+Course Code: CSE 4100 
+
+Course Title: Project or Thesis with Seminar Part I
+
+Supervisor:
+
+Zuairia Raisa Bintay Makin
+
+Lecturer 
+
+Department of Computer Science and Engineering
+
+Submission Date: 07 October 2026
+
+Contents
+
+1 Introduction ........................................................................ 3
+
+2 Literature Review / Background Study ................................. 4
+ 2.1 Existing Bangladeshi Fish Image Datasets ............................ 4
+ 2.2 Fish Species Identification Using Deep Learning .................. 4
+ 2.3 Taxonomic Verification of Fish Species ................................. 4
+ 2.4 Image Quality and Dataset Curation ...................................... 4
+ 2.5 ML/DL-Assisted Dataset Screening ....................................... 4
+ 2.6 Comparative Summary of Related Work ................................ 4
+
+3 Problem Statement .............................................................. 5
+
+4 Objectives ............................................................................ 5
+
+5 Proposed Methodology / System Design ............................... 5
+ 5.1 Image and Source Collection ................................................. 5
+ 5.2 Taxonomic Verification Methodology .................................... 6
+ 5.3 Image Quality Control ........................................................... 6
+ 5.4 Annotation and Metadata Design .......................................... 6
+ 5.5 ML/DL-Assisted Screening .................................................... 6
+ 5.6 Human Feedback and Re-Verification .................................. 7
+
+6 Method Justification ............................................................. 7
+
+7 Expected Outcomes ............................................................. 8
+
+8 Tools and Technologies to Be Used ..................................... 8
+
+9 References ............................................................................ 9
+
+10 Work Division and Team Management ................................ 10
+
+11 Timeline ............................................................................... 11
+
+12 Cost-Benefit Analysis .......................................................... 12
+
+13 Constraints and Limitations ............................................... 12
+
+14 Societal Impact .................................................................... 13
+
+15 Complex Engineering Problem Mapping ............................. 13
+
+16 Complex Engineering Activity Mapping .............................. 14
+
+17 Green Computing Considerations ....................................... 15
+
+18 Lifelong Learning and Personal Development ..................... 16
+
+Appendix A — Proposed Dataset Record Structure ................... 16
+
+Appendix B — Final Verification Decision Rules ........................ 17
+
+1. Introduction
+
+Bangladesh is strongly connected to inland and open-water fisheries through rivers, ponds, beels, floodplains, haors and other aquatic habitats. The Department of Fisheries identifies inland fisheries as a major national resource and reports 260 freshwater fish species in the country. This diversity creates an important opportunity for computer-vision research, but it also creates a data-quality challenge: a recognition system is only as dependable as the images and labels used to train and evaluate it.
+
+Fish identification from images is difficult because species can share similar body shapes, colors, fin structures, scale patterns, and visual features. Lighting, water condition, background, camera angle, fish orientation, and image quality can further change the appearance of the same species. Existing Bangladesh-focused datasets show that image-based fish recognition is already an active research direction. For example, BD-Freshwater-Fish contains 4,389 images of 12 species, while a later smartphone-based dataset contains 24,925 images of 21 freshwater species. 
+
+FishBD is proposed not simply as a larger collection of pictures, but as a curated research resource in which species identity, source information, image quality, metadata, and validation status are treated as linked components. The project will combine field/source collection, taxonomic verification, annotation, preprocessing, and AI-assisted quality screening into one reproducible pipeline.
+
+Why this topic is important in the Bangladesh context
+
+Fisheries have a direct national importance: the Department of Fisheries reports 2.53% contribution to national GDP and 22.26% to agricultural GDP in 2023–24. 
+
+Bangladesh contains substantial freshwater fish diversity, making local rather than generic international datasets important for local recognition tasks. 
+
+The national Red List assessment included 253 freshwater fish species and identified conservation concerns associated with habitat loss, overexploitation, invasive species, pollution and climate change. 
+
+Computer-vision systems can support identification and monitoring, but their reliability depends strongly on representative images and correct labels.
+
+Students, researchers and fisheries-related users need datasets that can be inspected, reused, and understood through clear metadata rather than opaque collections of images.
+
+Scope of the proposed work
+
+Focus on Bangladeshi freshwater fish species selected according to feasibility, availability and taxonomic relevance.
+
+Collect or curate images representing multiple environments and realistic visual variation rather than a single controlled background only.
+
+Attach scientific name, local name, source/habitat information, image identifier and verification status to each accepted image.
+
+Use ML/DL as an assistive screening and benchmarking component, while keeping human/taxonomic verification as the final authority.
+
+Produce documentation and dataset statistics so future researchers can understand how the dataset was constructed.
+
+2. Literature Review / Background Study
+
+Recent Bangladesh-focused work demonstrates strong interest in fish image classification, but the studies also reveal why dataset construction remains a meaningful research problem.
+
+Research gap. The literature shows that Bangladesh already has useful fish-image resources, so FishBD should not claim that no dataset exists. The more defensible gap is methodological: existing resources differ in species scope, collection conditions, metadata depth and validation procedures. FishBD therefore focuses on creating a transparent dataset-development framework in which taxonomic verification is explicitly documented and ML/DL is used for quality assistance rather than treated as a substitute for taxonomic expertise.
+
+Taxonomic reference basis. FishBase currently lists hundreds of fish species for Bangladesh and provides scientific classification and identification-oriented information. The IUCN Red List of Bangladesh separately documents the conservation status of freshwater fishes. These sources can support the reference layer used for scientific names and conservation context. 
+
+3. Problem Statement
+
+Bangladesh has substantial freshwater fish diversity, but image-based fish recognition is constrained by the quality, representativeness and reliability of available training data. Existing datasets are valuable but vary in species coverage and collection design. Images may come from markets or controlled backgrounds, and the same species may appear differently under changes in -
+
+Orientation 
+
+Lighting 
+
+Background  
+
+Image quality. 
+
+The central problem addressed by FishBD is therefore the absence of a clearly documented, taxonomically verified and quality-controlled dataset-development pipeline that connects image collection with authoritative species identity, metadata, AI-assisted screening and human feedback. Without such a process, an apparently accurate ML/DL model may learn from mislabeled, duplicated, biased or visually unrepresentative examples.
+
+Research question
+
+How can a Bangladesh-focused fish image dataset be constructed so that species labels are taxonomically defensible, image quality is controlled, metadata are standardized, and ML/DL can assist—rather than replace—human verification?
+
+4. Objectives
+
+Design and implement a reproducible pipeline for collecting and curating images of selected Bangladeshi freshwater fish species.
+
+Verify each accepted species label against recognized taxonomic references and expert feedback, recording the verification status as dataset metadata.
+
+Apply standardized quality control, duplicate screening, annotation and preprocessing so that the final dataset is suitable for machine-learning and deep-learning research.
+
+Develop an ML/DL-assisted screening stage that flags low-confidence, visually inconsistent or potentially mislabeled samples for human re-checking.
+
+Produce a documented benchmark-ready dataset with defined training, validation and testing partitions, along with dataset statistics and quality reports.
+
+These objectives are specific to dataset development, measurable through image/species counts, verification records, quality-control outcomes and documented validation procedures, achievable with open-source tools, relevant to Bangladesh's fisheries and AI context, and planned within the 12-month project period.
+
+5. Proposed Methodology / System Design
+
+Stage A — Source and image collection
+
+Collect images from feasible sources such as field locations, fish markets, fisheries-related contacts, institutional collections and openly reusable sources, subject to permission and usage conditions.
+
+Record source, approximate collection context, date where available, local name, provisional identification and image identifier.
+
+Seek variation in orientation, distance, lighting, background and body presentation so that the dataset does not represent only one photographic condition.
+
+Reject images whose origin or reuse rights cannot be reasonably established for the intended dataset.
+
+Stage B — Taxonomic verification
+
+Taxonomic verification will follow a hierarchy. First, the provisional species identity will be compared with authoritative taxonomic resources such as FishBase and relevant Bangladesh biodiversity/fisheries references. Second, morphological characteristics visible in the image will be checked against the expected species description. Third, uncertain cases will be reviewed by a knowledgeable human reviewer or taxonomic expert where available. FishBase provides a Bangladesh species list and classification fields, while the IUCN Bangladesh freshwater-fish volume provides species-level conservation context.
+
+Stage C — Quality control and annotation
+
+Remove exact or near-duplicate images where they could cause data leakage.
+
+Flag or remove severely blurred, overexposed, underexposed, obstructed or unusable images.
+
+Maintain a consistent image naming convention and unique image ID.
+
+Store scientific name, local/common name, source/habitat, location when appropriate, verification status and other available metadata.
+
+Keep rejected-image reasons in a quality-control log rather than silently deleting evidence of the curation process.
+
+Stage D — ML/DL-assisted screening
+
+After a sufficiently verified subset is available, a baseline classifier can be trained using CNN architectures or a Vision Transformer (ViT)-type model. The purpose at this stage is not to declare the taxonomic truth automatically. Instead, the model can identify samples that deserve additional inspection.
+
+ How the ML/DL component works
+
+Input: verified training images are converted to a consistent image format and size.
+
+Preprocessing: normalization and carefully selected augmentation can reduce sensitivity to harmless changes in image presentation.
+
+Feature learning: a CNN learns spatial patterns such as edges, textures, body shape and fin-related features; a ViT-type model can learn relationships among image patches.
+
+Prediction: the model outputs class probabilities or a confidence score for each candidate image.
+
+Screening: low-confidence predictions, disagreement with the recorded label, or unusual feature patterns are flagged.
+
+Human feedback: flagged cases are sent back to the verification stage; the reviewer can confirm, correct, or reject the image.
+
+Iteration: corrected labels can be used in a controlled re-training cycle, while verification records remain separate from model predictions.
+
+Verification feedback mechanism
+
+The feedback mechanism is intentionally conservative. A model disagreement is treated as a signal for inspection, not proof that the human label is wrong. If the taxonomic reference and expert review support the existing label, the image remains accepted even when the model is uncertain. If the reviewer finds an incorrect label, the metadata are corrected and the sample is reprocessed. This separation helps prevent circular validation in which a model is allowed to validate the same assumptions used to train it.
+
+Dataset organization and validation
+
+Create training, validation and test partitions at the specimen/source level where possible, reducing the chance that near-identical images of one fish appear in multiple splits.
+
+Report class distribution, image counts, source distribution, image-quality statistics and verification status.
+
+Document preprocessing and augmentation so that future researchers can reproduce the benchmark.
+
+Maintain a final audit checklist before dataset release.
+
+6. Method Justification
+
+The proposed methodology fits the project because the core deliverable is a reliable dataset, not merely a classification model. A dataset-first approach allows the project to address label correctness, diversity, metadata quality and reproducibility before measuring AI performance.
+
+7. Expected Outcomes
+
+A structured FishBD image dataset covering selected Bangladeshi freshwater fish species.
+
+Taxonomically supported scientific and local/common names with verification status.
+
+High-quality images representing more than one collection context where feasible.
+
+Standardized metadata and a documented data dictionary.
+
+Quality-control and rejection records that explain how the dataset was curated.
+
+Baseline ML/DL screening results showing how model confidence can support human review.
+
+Training, validation and test partitions suitable for future fish-recognition experiments.
+
+Dataset documentation, statistics, methodology description and a reproducible release structure.
+
+8. Tools and Technologies to Be Used
+
+9. References
+
+[1] Department of Fisheries, Bangladesh, “Fisheries Sector: Prospects and Potentials / Fish Production,” updated June 23, 2025. 
+
+[2] P. K. Das et al., “BD-freshwater-fish: An image dataset from Bangladesh for AI-powered automatic fish species classification and detection toward smart aquaculture,” Data in Brief, vol. 57, 111132, 2024, doi: 10.1016/j.dib.2024.111132. 
+
+[3] S. Sunny et al., “Comprehensive smartphone image dataset for fish species identification in Bangladesh's freshwater ecosystems,” Data in Brief, vol. 61, 111629, 2025, doi: 10.1016/j.dib.2025.111629. 
+
+[4] M. H. Ferdaus et al., “SmallFishBD: An extensive image dataset of common native small fish species in Bangladesh for identification and classification,” Data in Brief, vol. 63, 112193, 2025, doi: 10.1016/j.dib.2025.112193. 
+
+[5] “An advanced Bangladeshi local fish classification system based on the combination of deep learning and the internet of things (IoT),” Journal of Agriculture and Food Research, vol. 14, 100663, 2023. 
+
+[6] FishBase, “Fish Species in Bangladesh,” online database, accessed October 2026. 
+
+10. Work Division and Team Management
+
+The three members will work without a separate team-leader role. Responsibilities are divided by primary ownership, while verification decisions and major dataset changes are discussed jointly.
+
+Team management principle: each member maintains a change record for their work, and no major species-label change is accepted into the final release without cross-checking the supporting evidence.
+
+11. Timeline
+
+The schedule is deliberately overlapping because collection, verification, quality control and annotation are iterative. Field availability and expert-review timing may require adjustments without changing the overall 12-month completion target.
+
+12. Cost-Benefit Analysis
+
+The project is designed as a low-cost research activity because it can use existing smartphones/cameras, open-source software and available computing resources. The main variable cost is expected to be local travel and field collection.
+
+Benefit assessment. The main benefit is a reusable research asset: a verified and documented dataset can support future fish classification, detection, biodiversity studies and student research without repeating the entire data-collection process. This makes the proposed approach economically reasonable relative to repeatedly building small, disconnected datasets.
+
+13. Constraints and Limitations
+
+Economic
+
+Travel budget may restrict geographic coverage.
+
+Specialized equipment or distant collection sites may increase cost.
+
+Environmental
+
+Weather and water conditions can affect field collection.
+
+Some species may be seasonally available or difficult to photograph.
+
+Ethical and social
+
+Permission may be required for photographs or institutional sources.
+
+Images and metadata must respect source ownership and responsible data sharing.
+
+Technical
+
+Poor lighting, occlusion, blur and background variation can reduce image quality.
+
+Class imbalance may occur when some species are easier to obtain than others.
+
+Taxonomic
+
+Some images may not contain enough diagnostic features for confident identification.
+
+Expert availability may be limited, so uncertain samples may remain unresolved rather than being forced into a class.
+
+Health and safety
+
+Field collection near rivers, ponds or boats may involve physical hazards.
+
+Team members should follow safe collection and travel practices.
+
+14. Societal Impact
+
+Education: students can use a Bangladesh-focused, documented dataset to learn computer vision, data curation and fish identification.
+
+Research: researchers can reuse standardized images and metadata for classification, detection and biodiversity-related studies.
+
+Fisheries: reliable visual references may support future digital tools for fish identification and monitoring.
+
+Conservation: better species records can contribute to computational biodiversity studies, particularly where conservation status is already documented by national assessments. 
+
+Community value: a structured digital resource can connect local names and scientific names and make fish-related information easier to organize.
+
+Responsible AI: separating taxonomic authority from model prediction reduces the risk of presenting an AI guess as biological truth.
+
+15. Complex Engineering Problem Mapping
+
+FishBD maps to the complex engineering problem domains because the work is not a single coding task. It combines biological knowledge, data engineering, image processing, AI, field constraints, stakeholder interaction and validation requirements. The strongest domains are WP1, WP2, WP3, WP4, WP6 and WP7.
+
+Why this mapping matters. The project becomes an engineering problem because improving one part can affect another. For example, increasing species coverage may increase verification workload; increasing image diversity can improve realism but may reduce model performance if the data become noisy; stricter verification can improve reliability but increase project time. The proposal therefore requires trade-off decisions rather than a single fixed algorithm.
+
+16. Complex Engineering Activity Mapping
+
+The proposal aligns most strongly with EA1, EA2, EA3 and EA4. EA5 is also relevant because the project combines familiar programming techniques with less predictable field and taxonomic situations.
+
+Why we chose this engineering-activity mapping
+
+EA1 was selected because FishBD cannot be built with programming alone; it needs multiple resources and evidence types. EA2 was selected because the reliability of the dataset depends on interaction between collectors, data curators, taxonomic reviewers and AI researchers. EA3 was selected because the proposed contribution is a workflow innovation that joins taxonomic verification with ML/DL-assisted quality screening and an explicit feedback loop. EA4 was selected because the project is connected to fisheries, biodiversity and responsible environmental practice. EA5 is relevant because the team will encounter species that are easy to identify as well as cases where images are insufficient or conflicting. The project must therefore investigate rather than assume.
+
+17. Green Computing Considerations
+
+Prefer efficient baseline models before large-scale deep-learning experiments.Use pretrained models and transfer learning where appropriate to reduce unnecessary training computation.Use shared and reusable datasets so future researchers do not need to repeat the same image-collection effort.
+
+Use free/open-source software where possible to reduce hardware and licensing overhead.
+
+Schedule intensive experiments selectively and record model configurations to avoid repeated runs with no research value.
+
+Collect fish photographs without harming specimens and follow responsible field practices.
+
+18. Lifelong Learning and Personal Development
+
+Develops practical skills in dataset engineering, image preprocessing and computer-vision experimentation.
+
+Builds an understanding of how scientific taxonomy and AI-based classification can complement each other without confusing model prediction with biological truth.
+
+Improves research skills through literature review, source evaluation, citation, documentation and reproducibility.
+
+Develops experience with annotation tools, metadata design, quality-control procedures and versioned dataset organization.
+
+Strengthens teamwork and communication through shared review and feedback.
+
+Provides a foundation for future work in machine learning, computer vision, biodiversity informatics, data engineering and responsible AI.
+
+Long-term value. The most transferable outcome is not only the FishBD dataset; it is the ability to design trustworthy data pipelines in which data provenance, validation and human oversight are considered part of the engineering system.
+
+Appendix A — Proposed Dataset Record Structure
+
+Appendix B — Final Verification Decision Rules
+
+Do not accepted a species label only because an ML model predicts it with high confidence.
+
+Do not forced an uncertain image into a species class when the visible evidence is inadequate.
+
+Use authoritative taxonomic references and human review to establish the final label.
+
+Use ML/DL predictions to prioritize difficult cases, detect inconsistencies and support benchmarking.
+
+Keep a traceable record of corrections and rejected samples.
+
+Separate dataset curation from final model evaluation to reduce circular validation.
+
+                                   Department of Computer Science & Engineering | Varendra University • 
+
+
+=== EXTRACTED TABLES ===
+
+--- Table 1 ---
+Existing work | Scale / coverage | Main contribution | Gap relevant to FishBD
+BD-Freshwater-Fish (2024) | 4,389 images; 12 species | Bangladesh freshwater fish image dataset captured with HD mobile cameras; supports classification/detection. | Limited species coverage and dataset scope; primarily designed for AI classification/detection.
+Smartphone freshwater dataset (2025) | 24,925 images; 21 species | Large labeled smartphone dataset with variation in lighting/background. | Useful scale, but FishBD adds a stronger emphasis on explicit taxonomic verification and a human–AI quality loop.
+SmallFishBD (2025) | 10 native small-fish species | Curated native small-fish dataset with standardized imaging and augmentation. | Focused on a specific small-fish group and controlled collection context.
+Bangladeshi DL fish classification (2023) | 8 species in a new dataset | Benchmarked several pretrained CNN architectures and a CNN+ConvLSTM approach. | Demonstrates model capability, but the dataset-verification problem remains separate from model accuracy.
+
+--- Table 2 ---
+Design choice | Why it is suitable | Expected effect
+Taxonomic reference + human review | Species names require domain knowledge and authoritative classification; AI confidence alone is insufficient. | Higher label defensibility.
+Diverse image collection | Fish appearance changes with habitat, orientation, lighting and background. | Better representation of real use conditions.
+Quality-control log | Explicit acceptance/rejection criteria make curation auditable. | More reproducible dataset construction.
+ML/DL-assisted screening | Models can identify hard or unusual samples at scale after a verified seed set exists. | Efficient identification of cases needing review.
+Source-aware train/test split | Related images can create leakage if randomly split. | More credible future model evaluation.
+
+--- Table 3 ---
+Category | Tool / technology | Purpose | Why selected
+Programming | Python | Data processing, automation and experiments | Widely used for computer vision and data science.
+Image processing | OpenCV / Pillow | Resize, format conversion, quality checks | Open-source and suitable for batch image processing.
+Data handling | Pandas / NumPy | Metadata tables, statistics and preprocessing | Efficient structured data manipulation.
+Annotation | CVAT / Label Studio | Image annotation and review workflow | Supports structured labeling and collaborative curation.
+ML/DL | PyTorch or TensorFlow; CNN / ViT models | Baseline recognition and screening | Flexible research ecosystem.
+Development | VS Code / Google Colab | Coding and experimental work | Accessible development and optional cloud compute.
+Metadata | CSV / JSON | Portable dataset records | Simple, transparent and reusable formats.
+Taxonomy references | FishBase; IUCN Bangladesh references | Scientific identity and biodiversity context | Provides external reference information for verification.
+
+--- Table 4 ---
+Member | Primary responsibility | Key activities | Shared responsibility
+Sahariar Ahmed Isteyak | Data collection & pipeline | Source coordination, image collection records, dataset pipeline | Literature review, testing and final review
+Most. Amrin Akter | Taxonomy & annotation | Scientific/local name checking, annotation, metadata verification | Expert feedback coordination and documentation
+Lamia Hasan | Image processing & validation | Quality control, preprocessing, duplicate checks, dataset statistics | ML/DL screening and final audit
+
+--- Table 5 ---
+Work Package | M1 | M2 | M3 | M4 | M5 | M6 | M7 | M8 | M9 | M10 | M11 | M12
+Planning & literature review | ● | ● |  |  |  |  |  |  |  |  |  | 
+Dataset design & taxonomic protocol |  | ● | ● |  |  |  |  |  |  |  |  | 
+Image/source collection |  |  | ● | ● | ● | ● |  |  |  |  |  | 
+Taxonomic verification |  |  |  | ● | ● | ● | ● |  |  |  |  | 
+Quality control & duplicate screening |  |  |  |  |  | ● | ● | ● |  |  |  | 
+Annotation & metadata |  |  |  |  |  |  | ● | ● | ● |  |  | 
+Preprocessing & dataset organization |  |  |  |  |  |  |  | ● | ● | ● |  | 
+ML/DL baseline & screening |  |  |  |  |  |  |  |  | ● | ● |  | 
+Feedback & re-verification |  |  |  |  |  |  |  |  |  | ● | ● | 
+Validation & analysis |  |  |  |  |  |  |  |  |  |  | ● | ●
+Documentation & final report |  |  |  |  |  |  |  |  |  |  | ● | ●
+
+--- Table 6 ---
+Cost area | Expected requirement | Cost-control strategy
+Field travel | Transport to selected collection locations | Prioritize nearby feasible sites and combine visits.
+Image capture | Existing smartphones/cameras where adequate | Avoid dedicated camera purchase unless quality requires it.
+Software | Python, OpenCV, Pillow, Pandas, NumPy, CVAT/Label Studio | Prefer open-source tools.
+Compute | Local PC and/or free/available cloud resources | Use efficient baselines and shared experiments.
+Storage | Local drive + available cloud storage | Store compressed working copies and retain organized master records.
+Expert review | Time/coordination rather than major equipment cost | Use targeted review for uncertain samples rather than reviewing every image repeatedly.
+
+--- Table 7 ---
+Domain | Mapping | Why FishBD requires it
+WP1 — Depth of Knowledge | ✓ | Requires computer vision/ML knowledge plus fish morphology, taxonomy, dataset engineering and data-quality principles.
+WP2 — Conflicting Requirements | ✓ | More species and wider geographic variation increase diversity but also increase cost, verification effort and class imbalance.
+WP3 — Depth of Analysis | ✓ | Requires analysis of image quality, class distribution, model confidence, label disagreement and train/test leakage.
+WP4 — Familiarity of Issues |  | Some techniques are established, but local species ambiguity, field conditions and data availability create context-specific uncertainty.
+WP5 — Applicable Codes |  | No single software code determines species truth; however, data licensing, ethical collection and responsible AI practices remain relevant.
+WP6 — Stakeholder Involvement |  | Collectors, taxonomic reviewers, researchers and fisheries/conservation users can influence collection and validation requirements.
+WP7 — Interdependence |  | Collection quality affects taxonomy; taxonomy affects model quality; model feedback affects re-checking; metadata affects reuse.
+
+--- Table 8 ---
+Activity | Level | Why FishBD qualifies | Evidence / example
+EA1 — Range of resources | ✓ Strong | The project combines software, image data, smartphones/cameras, cloud/local computing, taxonomic references and human expertise. | Python + CV tools + field sources + FishBase/IUCN + expert review.
+EA2 — Level of interaction | ✓ Strong | Different people contribute different types of knowledge; communication affects dataset quality. | Team members + collectors + taxonomic reviewers + future users.
+EA3 — Innovation | ✓ Moderate/Strong | The innovation is in the integrated curation method rather than inventing a new CNN. | Taxonomic verification + ML/DL-assisted anomaly screening + feedback loop.
+EA4 — Consequences for society and environment | ✓ Strong | The dataset can influence future fish-identification systems and biodiversity research; collection must avoid harm and unnecessary environmental impact. | Education, fisheries research, conservation support and green-computing choices.
+EA5 — Familiarity | ✓ Moderate | The tools are familiar, but local data variability and uncertain species identity create unfamiliar cases requiring investigation. | Low-confidence samples and unresolved taxonomy are handled through feedback.
+
+--- Table 9 ---
+Field | Example | Purpose
+image_id | FBD_RUI_00001 | Unique reference for each image.
+scientific_name | Labeo rohita | Taxonomically meaningful species identifier.
+local_name | Rui | Bangladesh-relevant common/local name.
+source_type | Field / market / institutional | Provenance classification.
+habitat_context | River / pond / beel / market | Context for diversity analysis.
+location | District / region, where appropriate | Geographic metadata without unnecessary personal information.
+verification_status | Verified / review-needed / rejected | Tracks curation state.
+quality_status | Accepted / rejected + reason | Makes quality control auditable.
+split | Train / validation / test | Supports future benchmarking.
+review_note | Short reviewer comment | Preserves important decisions.
+
